@@ -41,6 +41,14 @@ typedef struct info_client{
     hero_t hero;
 }info_client_t;
 
+typedef struct data_to_affichage{
+
+    int sockclient;
+
+}data_to_affichage_t;
+
+
+
 int generer_nombre_aleatoire(int nb_max){
     return rand()%nb_max;
 }
@@ -49,6 +57,7 @@ int generer_nombre_aleatoire(int nb_max){
 * Renvoi le nombre de carte dans une map
 */
 pthread_mutex_t mutex= PTHREAD_MUTEX_INITIALIZER;
+
 
 int compter_nombre_carte(DIR* directory){
 struct dirent* info_directory;
@@ -63,37 +72,74 @@ return nb_carte_dans_repertoire;
 }
 
 
-/*
-* Routine du thread gérant les clients du côté serveur.
-*/
+
 carte_t carte_a_envoyer;
 
+/*
+* Routine du thread d'envoi carte
+*/
 
-void *thread_client(void *arg){ 
 
-info_client_t* info_client =(info_client_t*) arg; 
-int demande_client_to_server;
-int confirmation_eteinte=2;
+
+void *thread_envoi_carte(void *arg){
 int stop_thread=0;
-// Message d'indication du client
-printf("Connexion du client numero %d\n",info_client->i); 
-if(info_client->i==0){
+data_to_affichage_t* data=(data_to_affichage_t*) arg;
 
-pthread_mutex_lock(&mutex);
-carte_a_envoyer=charger_carte_monde_sav("monde.sav",info_client->world_descriptor,0);
-pthread_mutex_unlock(&mutex);
+while(stop_thread==0){
 
+    printf("Envoi carte\n");
+        pthread_mutex_lock(&mutex);
+        if(write(data->sockclient, &carte_a_envoyer, sizeof(carte_a_envoyer)) == -1) {
+            perror("Erreur lors de l'envoi de la valeur ");
+            exit(EXIT_FAILURE);
+     }
+      pthread_mutex_unlock(&mutex);
+      sleep(0.2);
 }
 
 
-info_client->hero=create_hero("H");
-pthread_mutex_lock(&mutex);
-carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
-pthread_mutex_unlock(&mutex);
+return NULL;
+}
+
+
+
+/*
+* Routine du thread gérant les clients du côté serveur.
+*/
+void *thread_client(void *arg){ 
+
+info_client_t* info_client =(info_client_t*) arg; // Récupération des infos du client
+data_to_affichage_t data;                         // Information qui sera envoyé au thread d'envoi des cartes.
+data.sockclient=info_client->sockclient;          
+int demande_client_to_server;                     //Demande envoyé par le client
+int confirmation_eteinte=2;                       //Ce qui sera envoyé au client lorsqu'il aura demandé de s'éteindre, accusé de réception.
+int stop_thread=0;                                // Décision d'arrêt du thread par le client.
+pthread_t thread;                                 // ID du thread d'envoi de la carte au client associé .
+
+
+printf("Connexion du client numero %d\n",info_client->i);  // Message d'indication du client
+
+if(info_client->i==0){  // Si c'est le premier client on load la carte.
+    pthread_mutex_lock(&mutex);
+    carte_a_envoyer=charger_carte_monde_sav("monde.sav",info_client->world_descriptor,0);
+    pthread_mutex_unlock(&mutex);
+}
+/*
+*   Création du thread d'envoi.
+*/
+ if(pthread_create(&thread,NULL,thread_envoi_carte,&data)!=0){
+                 perror("Erreur de création du thread d'affichage");
+                 exit(EXIT_FAILURE);
+ };
+
+info_client->hero=create_hero("H"); // On crée le héro avec les stats de base.
+pthread_mutex_lock(&mutex);                                                           // Affichage du héro
+carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';   // Affichage du héro
+pthread_mutex_unlock(&mutex);                                                         // Affichage du héro
 /*
 * On lit ce que nous a envoyé le client
 */
-while(stop_thread==0){
+while(stop_thread==0){ //Tant que le client n'a pas demandé à s'arrêter, on lit sa demande sur le socket.
  if(read(info_client->sockclient, &demande_client_to_server, sizeof(int)) == -1) {
         perror("Erreur lors de la lecture de la valeur ");
         exit(EXIT_FAILURE);
@@ -105,7 +151,7 @@ while(stop_thread==0){
       /*
       * VARIABLE DE CONDITION SUR LE THREAD QUI ENVOI TOUT LES X TEMPS
       */
-      case CARTE_DEFAULT: 
+      case CARTE_DEFAULT: // Si il nous demande la carte par défault, on lui envoi.
       pthread_mutex_lock(&mutex);
       if(write(info_client->sockclient, &carte_a_envoyer, sizeof(carte_a_envoyer)) == -1) {
             perror("Erreur lors de l'envoi de la valeur ");
@@ -131,7 +177,6 @@ while(stop_thread==0){
       /*
       * Mouvement haut, gauche, droite, bas.
       */
-
       case TOP:
       pthread_mutex_lock(&mutex);
       if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].code_couleur!=2){
@@ -171,6 +216,7 @@ while(stop_thread==0){
       }
       pthread_mutex_unlock(&mutex);
       break;
+      
 
   }
 
@@ -182,7 +228,7 @@ pthread_mutex_lock(&mutex);
 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
 pthread_mutex_unlock(&mutex);
 
-
+pthread_join(thread,NULL);
 return NULL;
 }
 
@@ -190,20 +236,19 @@ return NULL;
 
 
 
-
+int i=0;
 
 int main(int argc,char* argv[]){
 // Vérification des arguments
 int fd,sockclient[1024];
 struct sockaddr_in adresse;
 info_client_t info_client[1024];
-int i=0;
+
 char nom_repertoire[1024];
 pthread_t thread[1024];
 DIR* directory;
 char* cartes[300];
 off_t cartes_emplacement_sav[1024][1024];
-
 
 
 if(argc!=3){

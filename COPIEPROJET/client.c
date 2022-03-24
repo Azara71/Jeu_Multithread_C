@@ -117,9 +117,6 @@ data_to_thread_affichage_t* data_to_thread_affichage=(data_to_thread_affichage_t
 int demande_carte_default=CARTE_DEFAULT;
 int demande_deco=THREAD_STOP;
 
-
-while(stop_affichage==0){
-
 if(write(data_to_thread_affichage->fd,&demande_carte_default,sizeof(int))== -1) {
         perror("Erreur lors de l'envoi de la valeur ");
         exit(EXIT_FAILURE);
@@ -129,10 +126,18 @@ if(read(data_to_thread_affichage->fd, &carte_jeu, sizeof(carte_t)) == -1) {
         perror("Erreur lors de la lecture de la valeur ");
         exit(EXIT_FAILURE);
  }
+
+
+
+while(stop_affichage==0){
+
+if(read(data_to_thread_affichage->fd, &carte_jeu, sizeof(carte_t)) == -1) {
+        perror("Erreur lors de la lecture de la valeur ");
+        exit(EXIT_FAILURE);
+ }
     
 
 afficher_carte(data_to_thread_affichage->fenetre_carte,carte_jeu);
-sleep(0);
 
 }
    
