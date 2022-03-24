@@ -94,7 +94,7 @@ while(stop_thread==0){
             exit(EXIT_FAILURE);
      }
       pthread_mutex_unlock(&mutex);
-      sleep(0.2);
+      sleep(0.2 );
 }
 
 
@@ -294,8 +294,14 @@ while((info_directory=readdir(directory))!=NULL){
          printf("%ld",cartes_emplacement_sav[0][0]);
 
          printf("Enregistrement de la première carte de jeu dans monde.sav");
-         
 
+
+liste_carte_t* liste_de_test=init_liste_carte(); 
+liste_de_test=inserer_liste(liste_de_test, 0,0, "test");
+liste_de_test=inserer_liste(liste_de_test, 1,0, "test2");
+afficher_liste_carte(liste_de_test);
+liste_de_test=remove_map_from_list(liste_de_test,"test");
+afficher_liste_carte(liste_de_test);
 
 // Création de la socket
 if((fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) {
@@ -329,7 +335,7 @@ if(listen(fd, 1) == -1) {
             }
         }
         else {
-
+            
              info_client[i].world_descriptor=world_descriptor;
              info_client[i].hero=create_hero("H");
              info_client[i].i=i;
