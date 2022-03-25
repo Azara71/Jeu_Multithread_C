@@ -92,9 +92,11 @@ archive: clean
 
 # DEPENDANCES
 artefact.o: artefact.c artefact.h
+monstre.o: monstre.c monstre.h
 enregistrement.o: enregistrement.c fonction_ncurses.h monstre.h \
  artefact.h carte.h case.h entite.h
 fonction_ncurses.o: fonction_ncurses.c fonction_ncurses.h
+carte.o: carte.c carte.h case.h monstre.h entite.h artefact.h
 hero.o: hero.c hero.h artefact.h
 editeur.o: editeur.c fonction_ncurses.h monstre.h artefact.h carte.h \
  case.h entite.h enregistrement.h

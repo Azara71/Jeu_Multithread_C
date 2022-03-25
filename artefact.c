@@ -1,8 +1,8 @@
-#include "artefact.h"
+
 #include <ncurses.h>
 #include "string.h"
 #include "stdlib.h"
-
+#include "artefact.h"
 
 artefact_t create_artefact(char* name,unsigned short health,unsigned short armor,unsigned short strength,unsigned short speed,unsigned short attackspeed){
 artefact_t artefact;
@@ -82,3 +82,5 @@ wprintw(fenetre_informations," attackspeed :%d",artefact.attackspeed);
 
 wrefresh(fenetre_informations);
 }
+
+

@@ -23,7 +23,16 @@ artefact_t liste_artefact[5];
 
 }hero_t;
 
-
+/*
+* Crée un héro avec des stats de base
+*/
 hero_t create_hero(char* name);
-
+/*
+* Fonction permettant de trouver la première place libre pour un artefact dans son inventaire.
+*/
+int premiere_place_libre_inventaire_artefact(hero_t hero);
+/*
+* Fonction permettant à un héro de ramasser un artefact
+*/
+void ramasser_artefact(hero_t hero,artefact_t artefact);
 #endif

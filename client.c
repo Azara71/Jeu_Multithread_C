@@ -116,12 +116,16 @@ int totallus,lus=0;
 
 
 while(stop_affichage==0){
-
+/*
+* Ecriture de la demande de la carte.
+*/
 if(write(data_to_thread_affichage->fd,&demande_carte,sizeof(int))== -1) {
         perror("Erreur lors de l'envoi de la valeur ");
         exit(EXIT_FAILURE);
 }
-
+/*
+* Lecture d'une carte en entière sans débordement.
+*/
 while(totallus != sizeof(carte_t)){
     if((lus=read(data_to_thread_affichage->fd,&carte_jeu,sizeof(carte_t)-totallus))==-1){
         perror("Erreur lecture de carte");
@@ -130,14 +134,14 @@ while(totallus != sizeof(carte_t)){
     totallus+=lus;
 }
 totallus=0;
-    
-
 afficher_carte(data_to_thread_affichage->fenetre_carte,carte_jeu);
 
 }
    
 printf("Deconnexion...");
-
+/*
+* Déconnexion propre.
+*/
 if(write(data_to_thread_affichage->fd,&demande_deco,sizeof(int))== -1) {
         perror("Erreur lors de l'envoi de la valeur ");
         exit(EXIT_FAILURE);
@@ -149,9 +153,6 @@ if(read(data_to_thread_affichage->fd,&demande_deco,sizeof(int))== -1) {
 }
 }
 while(demande_deco!=2);
-
-
-
 
 
 

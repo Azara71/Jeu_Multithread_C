@@ -25,3 +25,26 @@ hero_t create_hero(char* name){
     }
 return hero;
 }
+
+/*
+* Fonction permettant de trouver la première place libre pour un artefact dans son inventaire.
+*/
+int premiere_place_libre_inventaire_artefact(hero_t hero){
+int i=0;
+    for(i=0;i<5;i++){
+       if(strcmp(hero.liste_artefact[i].name,"-1")==0){
+           return i;
+       };
+    }
+return i;
+
+}
+/*
+* Fonction permettant à un héro de ramasser un artefact
+*/
+void ramasser_artefact(hero_t hero,artefact_t artefact){
+int k=premiere_place_libre_inventaire_artefact(hero);
+    if(k<5){
+        hero.liste_artefact[k]=artefact;
+    }
+}
