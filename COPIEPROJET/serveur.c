@@ -190,8 +190,8 @@ totallus=0;
       */
       case TOP:
       pthread_mutex_lock(&mutex);
-      if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].code_couleur!=2){
-          if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem=='$'){
+      if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].code_couleur!=2 && carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem!='X' ){
+          if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem=='$' ){
               // générer heal ou pièce du grand tout.
           }
             carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
@@ -203,7 +203,7 @@ totallus=0;
 
       case LEFT:
       pthread_mutex_lock(&mutex);
-      if(carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].code_couleur!=2){
+      if(carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].code_couleur!=2 && carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].elem!='X'){
            if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem=='$'){
               // générer heal ou pièce du grand tout.
           }
@@ -216,7 +216,7 @@ totallus=0;
       
       case RIGHT:
       pthread_mutex_lock(&mutex);
-      if(carte_a_envoyer.cases[info_client->hero.cooX+1][info_client->hero.cooY].code_couleur!=2){
+      if(carte_a_envoyer.cases[info_client->hero.cooX+1][info_client->hero.cooY].code_couleur!=2 && carte_a_envoyer.cases[info_client->hero.cooX+1][info_client->hero.cooY].elem!='X'){
            if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem=='$'){
               // générer heal ou pièce du grand tout.
           }
@@ -229,7 +229,7 @@ totallus=0;
 
       case BOTTOM:
       pthread_mutex_lock(&mutex);
-      if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY+1].code_couleur!=2){
+      if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY+1].code_couleur!=2 && carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY+1].elem!='X'){
            if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem=='$'){
                if(info_client->hero.nb_piece_grand_tout<3){
                    info_client->hero.nb_piece_grand_tout++;
@@ -243,7 +243,6 @@ totallus=0;
       break;
       
   }
-sleep(1);
 
 }
 /*
