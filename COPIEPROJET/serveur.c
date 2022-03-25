@@ -94,7 +94,6 @@ while(stop_thread==0){
             exit(EXIT_FAILURE);
      }
       pthread_mutex_unlock(&mutex);
-      sleep(0.2 );
 }
 
 
@@ -139,11 +138,23 @@ pthread_mutex_unlock(&mutex);                                                   
 /*
 * On lit ce que nous a envoyé le client
 */
+ssize_t totallus,lus=0;
+
 while(stop_thread==0){ //Tant que le client n'a pas demandé à s'arrêter, on lit sa demande sur le socket.
- if(read(info_client->sockclient, &demande_client_to_server, sizeof(int)) == -1) {
-        perror("Erreur lors de la lecture de la valeur ");
+
+
+/*
+* PERMET DE LIRE LA TOTALITÉ DES DEMANDES EN UNE FOIS POUR EVITER LE CHEVAUCHEMENT DE DATA
+*/
+while(totallus != sizeof(int)){
+    if((lus=read(info_client->sockclient,&demande_client_to_server,sizeof(int)-totallus))==-1){
+        perror("Erreur lecture de carte");
         exit(EXIT_FAILURE);
- }
+    }
+    totallus+=lus;
+}
+totallus=0;
+
   switch(demande_client_to_server){
       /*
       * Demande de la carte.
@@ -180,6 +191,9 @@ while(stop_thread==0){ //Tant que le client n'a pas demandé à s'arrêter, on l
       case TOP:
       pthread_mutex_lock(&mutex);
       if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].code_couleur!=2){
+          if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem=='$'){
+              // générer heal ou pièce du grand tout.
+          }
             carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
             info_client->hero.cooY=info_client->hero.cooY-1;
             carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
@@ -190,6 +204,9 @@ while(stop_thread==0){ //Tant que le client n'a pas demandé à s'arrêter, on l
       case LEFT:
       pthread_mutex_lock(&mutex);
       if(carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].code_couleur!=2){
+           if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem=='$'){
+              // générer heal ou pièce du grand tout.
+          }
             carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
             info_client->hero.cooX=info_client->hero.cooX-1;
             carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
@@ -200,6 +217,9 @@ while(stop_thread==0){ //Tant que le client n'a pas demandé à s'arrêter, on l
       case RIGHT:
       pthread_mutex_lock(&mutex);
       if(carte_a_envoyer.cases[info_client->hero.cooX+1][info_client->hero.cooY].code_couleur!=2){
+           if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem=='$'){
+              // générer heal ou pièce du grand tout.
+          }
             carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
             info_client->hero.cooX=info_client->hero.cooX+1;
             carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
@@ -210,6 +230,11 @@ while(stop_thread==0){ //Tant que le client n'a pas demandé à s'arrêter, on l
       case BOTTOM:
       pthread_mutex_lock(&mutex);
       if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY+1].code_couleur!=2){
+           if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem=='$'){
+               if(info_client->hero.nb_piece_grand_tout<3){
+                   info_client->hero.nb_piece_grand_tout++;
+               }
+          }
             carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
             info_client->hero.cooY=info_client->hero.cooY+1;
             carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
@@ -217,8 +242,8 @@ while(stop_thread==0){ //Tant que le client n'a pas demandé à s'arrêter, on l
       pthread_mutex_unlock(&mutex);
       break;
       
-
   }
+sleep(1);
 
 }
 /*
@@ -295,14 +320,14 @@ while((info_directory=readdir(directory))!=NULL){
 
          printf("Enregistrement de la première carte de jeu dans monde.sav");
 
-
+/*
 liste_carte_t* liste_de_test=init_liste_carte(); 
 liste_de_test=inserer_liste(liste_de_test, 0,0, "test");
 liste_de_test=inserer_liste(liste_de_test, 1,0, "test2");
 afficher_liste_carte(liste_de_test);
 liste_de_test=remove_map_from_list(liste_de_test,"test");
 afficher_liste_carte(liste_de_test);
-
+*/
 // Création de la socket
 if((fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) {
     perror("Erreur lors de la création de la socket ");

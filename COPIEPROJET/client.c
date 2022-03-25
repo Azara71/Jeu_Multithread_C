@@ -20,6 +20,7 @@ PROGRAMME DU CLIENT,IL PREND LE PORT DU SERVEUR EN PARAMETRE ET UNE IP
 #include <unistd.h>
 #include <signal.h>
 #include <stdio.h>
+#include "hero.h"
 
 
 
@@ -116,28 +117,33 @@ void* thread_affichage(void *arg){
 data_to_thread_affichage_t* data_to_thread_affichage=(data_to_thread_affichage_t*) arg;
 int demande_carte_default=CARTE_DEFAULT;
 int demande_deco=THREAD_STOP;
+ssize_t lus,totallus=0;
+
 
 if(write(data_to_thread_affichage->fd,&demande_carte_default,sizeof(int))== -1) {
         perror("Erreur lors de l'envoi de la valeur ");
         exit(EXIT_FAILURE);
 }
 
-if(read(data_to_thread_affichage->fd, &carte_jeu, sizeof(carte_t)) == -1) {
-        perror("Erreur lors de la lecture de la valeur ");
-        exit(EXIT_FAILURE);
- }
+
+wprintw(data_to_thread_affichage->fenetre_informations,"test");
 
 
 
 while(stop_affichage==0){
-
-if(read(data_to_thread_affichage->fd, &carte_jeu, sizeof(carte_t)) == -1) {
-        perror("Erreur lors de la lecture de la valeur ");
+/*
+* PERMET DE LIRE LA TOTALITÉ DE LA CARTE EN UNE FOIS POUR EVITER LE CHEVAUCHEMENT DE DATA
+*/
+while(totallus != sizeof(carte_t)){
+    if((lus=read(data_to_thread_affichage->fd,&carte_jeu,sizeof(carte_t)-totallus))==-1){
+        perror("Erreur lecture de carte");
         exit(EXIT_FAILURE);
- }
-    
-
+    }
+    totallus+=lus;
+}
+totallus=0;
 afficher_carte(data_to_thread_affichage->fenetre_carte,carte_jeu);
+
 
 }
    
