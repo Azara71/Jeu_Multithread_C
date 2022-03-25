@@ -25,3 +25,25 @@ hero_t create_hero(char* name){
     }
 return hero;
 }
+
+void afficher_hero(hero_t hero){
+        printf("%s\n",hero.name);
+        printf("%d / %d\n",hero.health,hero.health_max);
+        printf("%d\n", hero.armor);
+        printf("%d\n", hero.strength);
+        printf("%d\n", hero.speed);
+        printf("%d\n", hero.attackspeed);
+        printf("%d\n", hero.level);
+        printf("%d\n", hero.experience);
+        printf("%d\n", hero.cooX);
+        printf("%d\n", hero.cooY);
+        printf("%d\n", hero.nb_piece_grand_tout);
+        printf("%d\n", hero.carteX);
+        printf("%d\n", hero.carteY);
+
+ for(int i=0;i<5;i++){
+    if(strcmp(hero.liste_artefact[i].name,"-1")!=0){
+        printf("%s\n",hero.liste_artefact[i].name);
+    }
+ }
+}

@@ -33,7 +33,7 @@ int stop=0;
 * Structure gérant les informations à passer au thread gérant le client à sa création
 */
 typedef struct info_client{
-    int i;
+    int num_client;
     int sockclient;
     char* nom_repertoire;
     DIR* directory;
@@ -44,7 +44,7 @@ typedef struct info_client{
 typedef struct data_to_affichage{
 
     int sockclient;
-
+    int num_client;
 }data_to_affichage_t;
 
 
@@ -72,6 +72,7 @@ return nb_carte_dans_repertoire;
 
 
 carte_t carte_a_envoyer;
+hero_t heros[1024];
 
 /*
 * Routine du thread d'envoi carte
@@ -89,8 +90,9 @@ while(stop_thread==0){
         if(write(data->sockclient, &carte_a_envoyer, sizeof(carte_a_envoyer)) == -1) {
             perror("Erreur lors de l'envoi de la valeur ");
             exit(EXIT_FAILURE);
-     }
+        }
       pthread_mutex_unlock(&mutex);
+      afficher_hero(heros[data->num_client]);
 }
 
 
@@ -106,16 +108,16 @@ void *thread_client(void *arg){
 
 info_client_t* info_client =(info_client_t*) arg; // Récupération des infos du client
 data_to_affichage_t data;                         // Information qui sera envoyé au thread d'envoi des cartes.
-data.sockclient=info_client->sockclient;          
+data.sockclient=info_client->sockclient;  
 int demande_client_to_server;                     //Demande envoyé par le client
 int confirmation_eteinte=2;                       //Ce qui sera envoyé au client lorsqu'il aura demandé de s'éteindre, accusé de réception.
 int stop_thread=0;                                // Décision d'arrêt du thread par le client.
 pthread_t thread;                                 // ID du thread d'envoi de la carte au client associé .
+heros[info_client->num_client]=heros[info_client->num_client];
 
+printf("Connexion du client numero %d\n",info_client->num_client);  // Message d'indication du client
 
-printf("Connexion du client numero %d\n",info_client->i);  // Message d'indication du client
-
-if(info_client->i==0){  // Si c'est le premier client on load la carte.
+if(info_client->num_client==0){  // Si c'est le premier client on load la carte.
     pthread_mutex_lock(&mutex);
     carte_a_envoyer=charger_carte_monde_sav("monde.sav",info_client->world_descriptor,0);
     pthread_mutex_unlock(&mutex);
@@ -128,9 +130,9 @@ if(info_client->i==0){  // Si c'est le premier client on load la carte.
                  exit(EXIT_FAILURE);
  };
 
-info_client->hero=create_hero("H"); // On crée le héro avec les stats de base.
+heros[info_client->num_client]=create_hero("H"); // On crée le héro avec les stats de base et on le place dans le tableau à l'indice du numero du client.
 pthread_mutex_lock(&mutex);                                                           // Affichage du héro
-carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';   // Affichage du héro
+carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY].elem='H';   // Affichage du héro
 pthread_mutex_unlock(&mutex);                                                         // Affichage du héro
 /*
 * On lit ce que nous a envoyé le client
@@ -138,7 +140,6 @@ pthread_mutex_unlock(&mutex);                                                   
 ssize_t totallus,lus=0;
 
 while(stop_thread==0){ //Tant que le client n'a pas demandé à s'arrêter, on lit sa demande sur le socket.
-
 
 /*
 * PERMET DE LIRE LA TOTALITÉ DES DEMANDES EN UNE FOIS POUR EVITER LE CHEVAUCHEMENT DE DATA
@@ -187,77 +188,77 @@ totallus=0;
       */
       case TOP:
       pthread_mutex_lock(&mutex);
-      if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].code_couleur!=2 && carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem!='X' ){
-            if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem=='$'){
+      if(carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY-1].code_couleur!=2 && carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY-1].elem!='X' ){
+            if(carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY-1].elem=='$'){
                  if(generer_nombre_aleatoire(2)==1){
-                      printf("Heal de %d",info_client->i);
-                      info_client->hero.health=info_client->hero.health_max;
+                      printf("Heal de %d",info_client->num_client);
+                      heros[info_client->num_client].health=heros[info_client->num_client].health_max;
                  }
                  else{
                      printf("GRAND TOUT\n");
                  }
           }
-            carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
-            info_client->hero.cooY=info_client->hero.cooY-1;
-            carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
+            carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY].elem=' ';
+            heros[info_client->num_client].cooY=heros[info_client->num_client].cooY-1;
+            carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY].elem='H';
       }
       pthread_mutex_unlock(&mutex);
       break;
 
       case LEFT:
       pthread_mutex_lock(&mutex);
-      if(carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].code_couleur!=2 && carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].elem!='X'){
-            if(carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].elem=='$'){
+      if(carte_a_envoyer.cases[heros[info_client->num_client].cooX-1][heros[info_client->num_client].cooY].code_couleur!=2 && carte_a_envoyer.cases[heros[info_client->num_client].cooX-1][heros[info_client->num_client].cooY].elem!='X'){
+            if(carte_a_envoyer.cases[heros[info_client->num_client].cooX-1][heros[info_client->num_client].cooY].elem=='$'){
                 if(generer_nombre_aleatoire(2)==1){
-                      printf("Heal de %d",info_client->i);
-                      info_client->hero.health=info_client->hero.health_max;
+                      printf("Heal de %d",info_client->num_client);
+                      heros[info_client->num_client].health=heros[info_client->num_client].health_max;
                 }
                 else{
                      printf("GRAND TOUT\n");
                 }  
             }          
-            carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
-            info_client->hero.cooX=info_client->hero.cooX-1;
-            carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
+            carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY].elem=' ';
+            heros[info_client->num_client].cooX=heros[info_client->num_client].cooX-1;
+            carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY].elem='H';
       }
       pthread_mutex_unlock(&mutex);
       break;
       
       case RIGHT:
       pthread_mutex_lock(&mutex);
-      if(carte_a_envoyer.cases[info_client->hero.cooX+1][info_client->hero.cooY].code_couleur!=2 && carte_a_envoyer.cases[info_client->hero.cooX+1][info_client->hero.cooY].elem!='X'){
-           if(carte_a_envoyer.cases[info_client->hero.cooX+1][info_client->hero.cooY].elem=='$'){
+      if(carte_a_envoyer.cases[heros[info_client->num_client].cooX+1][heros[info_client->num_client].cooY].code_couleur!=2 && carte_a_envoyer.cases[heros[info_client->num_client].cooX+1][heros[info_client->num_client].cooY].elem!='X'){
+           if(carte_a_envoyer.cases[heros[info_client->num_client].cooX+1][heros[info_client->num_client].cooY].elem=='$'){
                 if(generer_nombre_aleatoire(2)==1){
-                      printf("Heal de %d",info_client->i);
-                      info_client->hero.health=info_client->hero.health_max;
+                      printf("Heal de %d",info_client->num_client);
+                      heros[info_client->num_client].health=heros[info_client->num_client].health_max;
                 }
                 else{
                      printf("GRAND TOUT\n");
                 }  
             }
-            carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
-            info_client->hero.cooX=info_client->hero.cooX+1;
-            carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
+            carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY].elem=' ';
+            heros[info_client->num_client].cooX=heros[info_client->num_client].cooX+1;
+            carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY].elem='H';
       }
       pthread_mutex_unlock(&mutex);
       break;
 
       case BOTTOM:
       pthread_mutex_lock(&mutex);
-      if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY+1].code_couleur!=2 && carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY+1].elem!='X'){
-            if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY+1].elem=='$'){
+      if(carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY+1].code_couleur!=2 && carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY+1].elem!='X'){
+            if(carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY+1].elem=='$'){
                 if(generer_nombre_aleatoire(2)==1){
-                      printf("Heal de %d",info_client->i);
-                      info_client->hero.health=info_client->hero.health_max;
+                      printf("Heal de %d",info_client->num_client);
+                      heros[info_client->num_client].health=heros[info_client->num_client].health_max;
                 }
                 else{
                      printf("GRAND TOUT\n");
                 }      
            }
 
-            carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
-            info_client->hero.cooY=info_client->hero.cooY+1;
-            carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
+            carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY].elem=' ';
+            heros[info_client->num_client].cooY=heros[info_client->num_client].cooY+1;
+            carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY].elem='H';
       }
       pthread_mutex_unlock(&mutex);
       break;
@@ -269,7 +270,7 @@ totallus=0;
 * Si on éteint le client, on efface l'élément H de la carte
 */
 pthread_mutex_lock(&mutex);
-carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
+carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY].elem=' ';
 pthread_mutex_unlock(&mutex);
 
 pthread_join(thread,NULL);
@@ -280,7 +281,7 @@ return NULL;
 
 
 
-int i=0;
+int nb_client=0;
 
 int main(int argc,char* argv[]){
 // Vérification des arguments
@@ -372,7 +373,7 @@ if(listen(fd, 1) == -1) {
  while(stop == 0) {
         // Attente d'une connexion
         printf("Serveur : attente de connexion...\n");
-        if((sockclient[i] = accept(fd, NULL, NULL)) == -1) {
+        if((sockclient[nb_client] = accept(fd, NULL, NULL)) == -1) {
             if(errno != EINTR) {
                 perror("Erreur lors de la demande de connexion ");
                 exit(EXIT_FAILURE);
@@ -380,25 +381,25 @@ if(listen(fd, 1) == -1) {
         }
         else {
             
-             info_client[i].world_descriptor=world_descriptor;
-             info_client[i].hero=create_hero("H");
-             info_client[i].i=i;
-             info_client[i].sockclient=sockclient[i];
-             info_client[i].nom_repertoire=malloc(sizeof(char)*strlen(nom_repertoire)+1);
-             info_client[i].directory=directory;
-             strcpy(info_client[i].nom_repertoire,nom_repertoire);
-             if(pthread_create(&thread[i],NULL,thread_client,&info_client[i])!=0){
+             info_client[nb_client].world_descriptor=world_descriptor;
+             info_client[nb_client].hero=create_hero("H");
+             info_client[nb_client].num_client=nb_client;
+             info_client[nb_client].sockclient=sockclient[nb_client];
+             info_client[nb_client].nom_repertoire=malloc(sizeof(char)*strlen(nom_repertoire)+1);
+             info_client[nb_client].directory=directory;
+             strcpy(info_client[nb_client].nom_repertoire,nom_repertoire);
+             if(pthread_create(&thread[nb_client],NULL,thread_client,&info_client[nb_client])!=0){
                  perror("Erreur de création du thread d'affichage");
                  exit(EXIT_FAILURE);
              };
         }
-        i++;
+        nb_client++;
 
 
  }
 
-    for(int j=0;j<i;j++){
-        pthread_join(thread[i],NULL);
+    for(int j=0;j<nb_client;j++){
+        pthread_join(thread[nb_client],NULL);
     }
 
 

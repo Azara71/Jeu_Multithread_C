@@ -25,5 +25,5 @@ artefact_t liste_artefact[5];
 
 
 hero_t create_hero(char* name);
-
+void afficher_hero(hero_t hero);
 #endif
