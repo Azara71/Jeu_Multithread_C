@@ -32,7 +32,7 @@ PROGRAMME DU SERVEUR, IL PREND LE PORT TCP EN ENTREE, LE NOM DU REPETOIRE DE CAR
 * Structure gérant les informations à passer au thread gérant le client à sa création
 */
 typedef struct info_client{
-    int i;
+    int num_client;
     int sockclient;
     char* nom_repertoire;
     DIR* directory;
@@ -83,8 +83,8 @@ int demande_client_to_server;
 int confirmation_eteinte=2;
 int stop_thread=0;
 // Message d'indication du client
-printf("Connexion du client numero %d\n",info_client->i); 
-if(info_client->i==0){
+printf("Connexion du client numero %d\n",info_client->num_client); 
+if(info_client->num_client==0){
 
 pthread_mutex_lock(&mutex);
 carte_a_envoyer=charger_carte_monde_sav("monde.sav",info_client->world_descriptor,0);
@@ -146,7 +146,7 @@ while(stop_thread==0){
             if(info_client->hero.cooY-1>=0){
                 if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem=='$'){
                         if(generer_nombre_aleatoire(2)==1){
-                            printf("Heal de %d",info_client->i);
+                            printf("Heal de %d",info_client->num_client);
                             info_client->hero.health=info_client->hero.health_max;
                         }
                         else{
@@ -167,7 +167,7 @@ while(stop_thread==0){
             if(info_client->hero.cooX-1>=0){
                 if(carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].elem=='$'){
                         if(generer_nombre_aleatoire(2)==1){
-                            printf("Heal de %d",info_client->i);
+                            printf("Heal de %d",info_client->num_client);
                             info_client->hero.health=info_client->hero.health_max;
                         }
                         else{
@@ -188,7 +188,7 @@ while(stop_thread==0){
             if(info_client->hero.cooX+1<40){
                 if(carte_a_envoyer.cases[info_client->hero.cooX+1][info_client->hero.cooY].elem=='$'){
                         if(generer_nombre_aleatoire(2)==1){
-                            printf("Heal de %d",info_client->i);
+                            printf("Heal de %d",info_client->num_client);
                             info_client->hero.health=info_client->hero.health_max;
                         }
                         else{
@@ -209,7 +209,7 @@ while(stop_thread==0){
             if(info_client->hero.cooY+1<20){
                 if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY+1].elem=='$'){
                         if(generer_nombre_aleatoire(2)==1){
-                            printf("Heal de %d",info_client->i);
+                            printf("Heal de %d",info_client->num_client);
                             info_client->hero.health=info_client->hero.health_max;
                         }
                         else{
@@ -250,7 +250,7 @@ int main(int argc,char* argv[]){
 int fd,sockclient[1024];
 struct sockaddr_in adresse;
 info_client_t info_client[1024];
-int i=0;
+int nb_client=0;
 char nom_repertoire[1024];
 pthread_t thread[1024];
 DIR* directory;
@@ -330,7 +330,7 @@ if(listen(fd, 1) == -1) {
  while(stop == 0) {
         // Attente d'une connexion
         printf("Serveur : attente de connexion...\n");
-        if((sockclient[i] = accept(fd, NULL, NULL)) == -1) {
+        if((sockclient[nb_client] = accept(fd, NULL, NULL)) == -1) {
             if(errno != EINTR) {
                 perror("Erreur lors de la demande de connexion ");
                 exit(EXIT_FAILURE);
@@ -338,25 +338,25 @@ if(listen(fd, 1) == -1) {
         }
         else {
 
-             info_client[i].world_descriptor=world_descriptor;
-             info_client[i].hero=create_hero("H");
-             info_client[i].i=i;
-             info_client[i].sockclient=sockclient[i];
-             info_client[i].nom_repertoire=malloc(sizeof(char)*strlen(nom_repertoire)+1);
-             info_client[i].directory=directory;
-             strcpy(info_client[i].nom_repertoire,nom_repertoire);
-             if(pthread_create(&thread[i],NULL,thread_client,&info_client[i])!=0){
+             info_client[nb_client].world_descriptor=world_descriptor;
+             info_client[nb_client].hero=create_hero("H");
+             info_client[nb_client].num_client=nb_client;
+             info_client[nb_client].sockclient=sockclient[nb_client];
+             info_client[nb_client].nom_repertoire=malloc(sizeof(char)*strlen(nom_repertoire)+1);
+             info_client[nb_client].directory=directory;
+             strcpy(info_client[nb_client].nom_repertoire,nom_repertoire);
+             if(pthread_create(&thread[nb_client],NULL,thread_client,&info_client[nb_client])!=0){
                  perror("Erreur de création du thread d'affichage");
                  exit(EXIT_FAILURE);
              };
         }
-        i++;
+        nb_client++;
 
 
  }
 
-    for(int j=0;j<i;j++){
-        pthread_join(thread[i],NULL);
+    for(int j=0;j<nb_client;j++){
+        pthread_join(thread[nb_client],NULL);
     }
 
 
