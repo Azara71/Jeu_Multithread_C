@@ -21,7 +21,6 @@ PROGRAMME DU SERVEUR, IL PREND LE PORT TCP EN ENTREE, LE NOM DU REPETOIRE DE CAR
 #include "enregistrement.h"
 #include <dirent.h>
 #include "hero.h"
-int stop=0;
 #define CARTE 1
 #define THREAD_STOP 2
 #define BOTTOM 258 
@@ -48,7 +47,6 @@ int generer_nombre_aleatoire(int nb_max){
 /*
 * Renvoi le nombre de carte dans une map
 */
-pthread_mutex_t mutex= PTHREAD_MUTEX_INITIALIZER;
 
 int compter_nombre_carte(DIR* directory){
 struct dirent* info_directory;
@@ -62,11 +60,20 @@ while((info_directory=readdir(directory))!=NULL){
 return nb_carte_dans_repertoire;
 }
 
+void ramasser_piece_grand_tout(hero_t hero){
+
+    if(hero.nb_piece_grand_tout<3){
+        hero.nb_piece_grand_tout++;
+    }
+
+}
 
 /*
 * Routine du thread gérant les clients du côté serveur.
 */
+pthread_mutex_t mutex= PTHREAD_MUTEX_INITIALIZER;
 carte_t carte_a_envoyer;
+int stop=0;
 
 
 void *thread_client(void *arg){ 
@@ -143,7 +150,7 @@ while(stop_thread==0){
                             info_client->hero.health=info_client->hero.health_max;
                         }
                         else{
-                            printf("GRAND TOUT\n");
+                            ramasser_piece_grand_tout(info_client->hero);
                         }    
                 }
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
@@ -164,7 +171,7 @@ while(stop_thread==0){
                             info_client->hero.health=info_client->hero.health_max;
                         }
                         else{
-                            printf("GRAND TOUT\n");
+                            ramasser_piece_grand_tout(info_client->hero);
                         }    
                 }
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
@@ -185,7 +192,7 @@ while(stop_thread==0){
                             info_client->hero.health=info_client->hero.health_max;
                         }
                         else{
-                            printf("GRAND TOUT\n");
+                            ramasser_piece_grand_tout(info_client->hero);
                         }    
                 } 
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
@@ -206,7 +213,7 @@ while(stop_thread==0){
                             info_client->hero.health=info_client->hero.health_max;
                         }
                         else{
-                            printf("GRAND TOUT\n");
+                            ramasser_piece_grand_tout(info_client->hero);
                         }    
                 }   
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
