@@ -53,9 +53,7 @@ int generer_nombre_aleatoire(int nb_max){
     return rand()%nb_max;
 }
 
-/*
-* Renvoi le nombre de carte dans une map
-*/
+
 pthread_mutex_t mutex= PTHREAD_MUTEX_INITIALIZER;
 
 
@@ -87,7 +85,6 @@ data_to_affichage_t* data=(data_to_affichage_t*) arg;
 
 while(stop_thread==0){
 
-    printf("Envoi carte\n");
         pthread_mutex_lock(&mutex);
         if(write(data->sockclient, &carte_a_envoyer, sizeof(carte_a_envoyer)) == -1) {
             perror("Erreur lors de l'envoi de la valeur ");
@@ -191,8 +188,14 @@ totallus=0;
       case TOP:
       pthread_mutex_lock(&mutex);
       if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].code_couleur!=2 && carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem!='X' ){
-          if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem=='$' ){
-              // générer heal ou pièce du grand tout.
+            if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem=='$'){
+                 if(generer_nombre_aleatoire(2)==1){
+                      printf("Heal de %d",info_client->i);
+                      info_client->hero.health=info_client->hero.health_max;
+                 }
+                 else{
+                     printf("GRAND TOUT\n");
+                 }
           }
             carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
             info_client->hero.cooY=info_client->hero.cooY-1;
@@ -204,9 +207,15 @@ totallus=0;
       case LEFT:
       pthread_mutex_lock(&mutex);
       if(carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].code_couleur!=2 && carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].elem!='X'){
-           if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem=='$'){
-              // générer heal ou pièce du grand tout.
-          }
+            if(carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].elem=='$'){
+                if(generer_nombre_aleatoire(2)==1){
+                      printf("Heal de %d",info_client->i);
+                      info_client->hero.health=info_client->hero.health_max;
+                }
+                else{
+                     printf("GRAND TOUT\n");
+                }  
+            }          
             carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
             info_client->hero.cooX=info_client->hero.cooX-1;
             carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
@@ -217,9 +226,15 @@ totallus=0;
       case RIGHT:
       pthread_mutex_lock(&mutex);
       if(carte_a_envoyer.cases[info_client->hero.cooX+1][info_client->hero.cooY].code_couleur!=2 && carte_a_envoyer.cases[info_client->hero.cooX+1][info_client->hero.cooY].elem!='X'){
-           if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem=='$'){
-              // générer heal ou pièce du grand tout.
-          }
+           if(carte_a_envoyer.cases[info_client->hero.cooX+1][info_client->hero.cooY].elem=='$'){
+                if(generer_nombre_aleatoire(2)==1){
+                      printf("Heal de %d",info_client->i);
+                      info_client->hero.health=info_client->hero.health_max;
+                }
+                else{
+                     printf("GRAND TOUT\n");
+                }  
+            }
             carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
             info_client->hero.cooX=info_client->hero.cooX+1;
             carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
@@ -230,11 +245,16 @@ totallus=0;
       case BOTTOM:
       pthread_mutex_lock(&mutex);
       if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY+1].code_couleur!=2 && carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY+1].elem!='X'){
-           if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem=='$'){
-               if(info_client->hero.nb_piece_grand_tout<3){
-                   info_client->hero.nb_piece_grand_tout++;
-               }
-          }
+            if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY+1].elem=='$'){
+                if(generer_nombre_aleatoire(2)==1){
+                      printf("Heal de %d",info_client->i);
+                      info_client->hero.health=info_client->hero.health_max;
+                }
+                else{
+                     printf("GRAND TOUT\n");
+                }      
+           }
+
             carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
             info_client->hero.cooY=info_client->hero.cooY+1;
             carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
