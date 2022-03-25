@@ -188,6 +188,8 @@ totallus=0;
       */
       case TOP:
       pthread_mutex_lock(&mutex);
+      if(heros[info_client->num_client].cooY-1>=0){
+
       if(carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY-1].code_couleur!=2 && carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY-1].elem!='X' ){
             if(carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY-1].elem=='$'){
                  if(generer_nombre_aleatoire(2)==1){
@@ -198,15 +200,20 @@ totallus=0;
                      printf("GRAND TOUT\n");
                  }
           }
+      
             carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY].elem=' ';
             heros[info_client->num_client].cooY=heros[info_client->num_client].cooY-1;
             carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY].elem='H';
       }
+      }
       pthread_mutex_unlock(&mutex);
+      
       break;
 
       case LEFT:
       pthread_mutex_lock(&mutex);
+      if(heros[info_client->num_client].cooX-1>=0){
+
       if(carte_a_envoyer.cases[heros[info_client->num_client].cooX-1][heros[info_client->num_client].cooY].code_couleur!=2 && carte_a_envoyer.cases[heros[info_client->num_client].cooX-1][heros[info_client->num_client].cooY].elem!='X'){
             if(carte_a_envoyer.cases[heros[info_client->num_client].cooX-1][heros[info_client->num_client].cooY].elem=='$'){
                 if(generer_nombre_aleatoire(2)==1){
@@ -221,30 +228,37 @@ totallus=0;
             heros[info_client->num_client].cooX=heros[info_client->num_client].cooX-1;
             carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY].elem='H';
       }
+      }
       pthread_mutex_unlock(&mutex);
       break;
       
       case RIGHT:
       pthread_mutex_lock(&mutex);
-      if(carte_a_envoyer.cases[heros[info_client->num_client].cooX+1][heros[info_client->num_client].cooY].code_couleur!=2 && carte_a_envoyer.cases[heros[info_client->num_client].cooX+1][heros[info_client->num_client].cooY].elem!='X'){
-           if(carte_a_envoyer.cases[heros[info_client->num_client].cooX+1][heros[info_client->num_client].cooY].elem=='$'){
-                if(generer_nombre_aleatoire(2)==1){
-                      printf("Heal de %d",info_client->num_client);
-                      heros[info_client->num_client].health=heros[info_client->num_client].health_max;
-                }
-                else{
-                     printf("GRAND TOUT\n");
-                }  
-            }
-            carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY].elem=' ';
-            heros[info_client->num_client].cooX=heros[info_client->num_client].cooX+1;
-            carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY].elem='H';
-      }
+      if(heros[info_client->num_client].cooX+1<40){
+         if(carte_a_envoyer.cases[heros[info_client->num_client].cooX+1][heros[info_client->num_client].cooY].code_couleur!=2 && carte_a_envoyer.cases[heros[info_client->num_client].cooX+1][heros[info_client->num_client].cooY].elem!='X'){
+             if(carte_a_envoyer.cases[heros[info_client->num_client].cooX+1][heros[info_client->num_client].cooY].elem=='$'){
+                 if(generer_nombre_aleatoire(2)==1){
+                       printf("Heal de %d",info_client->num_client);
+                       heros[info_client->num_client].health=heros[info_client->num_client].health_max;
+                  }
+                 else{
+                         printf("GRAND TOUT\n");
+                    }  
+              }
+             carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY].elem=' ';
+             heros[info_client->num_client].cooX=heros[info_client->num_client].cooX+1;
+             carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY].elem='H';
+         }
+    }
       pthread_mutex_unlock(&mutex);
+     
       break;
+      
 
       case BOTTOM:
       pthread_mutex_lock(&mutex);
+      if(heros[info_client->num_client].cooY+1<20){
+
       if(carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY+1].code_couleur!=2 && carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY+1].elem!='X'){
             if(carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY+1].elem=='$'){
                 if(generer_nombre_aleatoire(2)==1){
@@ -260,7 +274,9 @@ totallus=0;
             heros[info_client->num_client].cooY=heros[info_client->num_client].cooY+1;
             carte_a_envoyer.cases[heros[info_client->num_client].cooX][heros[info_client->num_client].cooY].elem='H';
       }
+      }
       pthread_mutex_unlock(&mutex);
+      
       break;
       
   }
