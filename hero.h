@@ -34,5 +34,5 @@ int premiere_place_libre_inventaire_artefact(hero_t hero);
 /*
 * Fonction permettant à un héro de ramasser un artefact
 */
-void ramasser_artefact(hero_t hero,artefact_t artefact);
+hero_t ramasser_artefact(hero_t hero,artefact_t artefact,int k);
 #endif

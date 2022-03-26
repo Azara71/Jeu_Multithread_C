@@ -23,6 +23,22 @@ typedef struct liste_carte{
      carte_chainee_t *tete;
 } liste_carte_t;
 
+typedef struct node{
+    int x;
+    int y;
+    ssize_t emplacement_carte_file;
+}node_t;
+
+typedef struct table_node{
+    int nb_nodes_actif;
+    node_t nodes[10];
+    struct table_node_t* table_suivante;
+    ssize_t location_table_suivante;
+
+
+}table_node_t;
+
+
 liste_carte_t *init_liste_carte();
 void afficher_liste_carte(liste_carte_t *liste);
 liste_carte_t *inserer_liste(liste_carte_t *liste, int x,int y, char* nom_map);

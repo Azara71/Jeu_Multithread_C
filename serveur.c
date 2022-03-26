@@ -141,9 +141,8 @@ while(stop_thread==0){
       */
       case TOP:
       pthread_mutex_lock(&mutex);
-      
-      if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].code_couleur!=2 && carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem!='X'){
-            if(info_client->hero.cooY-1>=0){
+      if(info_client->hero.cooY-1>=0){
+         if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].code_couleur!=2 && carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem!='X'){
                 if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem=='$'){
                         if(generer_nombre_aleatoire(2)==1){
                             printf("Heal de %d",info_client->num_client);
@@ -153,18 +152,31 @@ while(stop_thread==0){
                             ramasser_piece_grand_tout(info_client->hero);
                         }    
                 }
+                if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem=='A'){
+                    int  id_cartefact_a_ramasser=carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].indelem;
+                    int premiere_place_libre=premiere_place_libre_inventaire_artefact(info_client->hero);
+                    info_client->hero=ramasser_artefact(info_client->hero,carte_a_envoyer.artefacts[id_cartefact_a_ramasser],premiere_place_libre);
+                    carte_a_envoyer.artefacts[id_cartefact_a_ramasser]=create_artefact("-1",0,0,0,0,0);
+                    carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].indelem=-1;
+                }
+
+
+
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
                 info_client->hero.cooY=info_client->hero.cooY-1;
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
             }
+      }
+      else{
+        printf("Génération vers le haut\n");
       }
       pthread_mutex_unlock(&mutex);
       break;
 
       case LEFT:
       pthread_mutex_lock(&mutex);
-      if(carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].code_couleur!=2 && carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].elem!='X'){
-            if(info_client->hero.cooX-1>=0){
+      if(info_client->hero.cooX-1>=0){
+            if(carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].code_couleur!=2 && carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].elem!='X'){
                 if(carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].elem=='$'){
                         if(generer_nombre_aleatoire(2)==1){
                             printf("Heal de %d",info_client->num_client);
@@ -174,18 +186,31 @@ while(stop_thread==0){
                             ramasser_piece_grand_tout(info_client->hero);
                         }    
                 }
+                if(carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].elem=='A'){
+                    int  id_cartefact_a_ramasser=carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].indelem;
+                    int premiere_place_libre=premiere_place_libre_inventaire_artefact(info_client->hero);
+                    info_client->hero=ramasser_artefact(info_client->hero,carte_a_envoyer.artefacts[id_cartefact_a_ramasser],premiere_place_libre);
+                    carte_a_envoyer.artefacts[id_cartefact_a_ramasser]=create_artefact("-1",0,0,0,0,0);
+                    carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].indelem=-1;
+                }
+
+
+
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
                 info_client->hero.cooX=info_client->hero.cooX-1;
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
             }
+      }
+      else{
+        printf("Génération vers la gauche\n");
       }
       pthread_mutex_unlock(&mutex);
       break;
       
       case RIGHT:
       pthread_mutex_lock(&mutex);
-      if(carte_a_envoyer.cases[info_client->hero.cooX+1][info_client->hero.cooY].code_couleur!=2 && carte_a_envoyer.cases[info_client->hero.cooX+1][info_client->hero.cooY].elem!='X'){
-            if(info_client->hero.cooX+1<40){
+        if(info_client->hero.cooX+1<40){
+            if(carte_a_envoyer.cases[info_client->hero.cooX+1][info_client->hero.cooY].code_couleur!=2 && carte_a_envoyer.cases[info_client->hero.cooX+1][info_client->hero.cooY].elem!='X'){
                 if(carte_a_envoyer.cases[info_client->hero.cooX+1][info_client->hero.cooY].elem=='$'){
                         if(generer_nombre_aleatoire(2)==1){
                             printf("Heal de %d",info_client->num_client);
@@ -194,19 +219,31 @@ while(stop_thread==0){
                         else{
                             ramasser_piece_grand_tout(info_client->hero);
                         }    
+                }
+                if(carte_a_envoyer.cases[info_client->hero.cooX+1][info_client->hero.cooY].elem=='A'){
+
+                    int  id_cartefact_a_ramasser=carte_a_envoyer.cases[info_client->hero.cooX+1][info_client->hero.cooY].indelem;
+                    int premiere_place_libre=premiere_place_libre_inventaire_artefact(info_client->hero);
+                    info_client->hero=ramasser_artefact(info_client->hero,carte_a_envoyer.artefacts[id_cartefact_a_ramasser],premiere_place_libre);
+                    carte_a_envoyer.artefacts[id_cartefact_a_ramasser]=create_artefact("-1",0,0,0,0,0);
+                    carte_a_envoyer.cases[info_client->hero.cooX+1][info_client->hero.cooY].indelem=-1;
+
                 } 
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
                 info_client->hero.cooX=info_client->hero.cooX+1;
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
             }
       }
+      else{
+        printf("Génération vers la droite\n");
+      }
       pthread_mutex_unlock(&mutex);
       break;
 
       case BOTTOM:
       pthread_mutex_lock(&mutex);
-      if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY+1].code_couleur!=2 && carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY+1].elem!='X'){
-            if(info_client->hero.cooY+1<20){
+      if(info_client->hero.cooY+1<20){
+           if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY+1].code_couleur!=2 && carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY+1].elem!='X'){
                 if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY+1].elem=='$'){
                         if(generer_nombre_aleatoire(2)==1){
                             printf("Heal de %d",info_client->num_client);
@@ -215,12 +252,24 @@ while(stop_thread==0){
                         else{
                             ramasser_piece_grand_tout(info_client->hero);
                         }    
-                }   
+                }
+                if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY+1].elem=='A'){
+
+                    int  id_cartefact_a_ramasser=carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY+1].indelem;
+                    int premiere_place_libre=premiere_place_libre_inventaire_artefact(info_client->hero);
+                    info_client->hero=ramasser_artefact(info_client->hero,carte_a_envoyer.artefacts[id_cartefact_a_ramasser],premiere_place_libre);
+                    carte_a_envoyer.artefacts[id_cartefact_a_ramasser]=create_artefact("-1",0,0,0,0,0);
+                    carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY+1].indelem=-1;
+                }
+                   
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
                 info_client->hero.cooY=info_client->hero.cooY+1;
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
             }
 
+      }
+      else{
+        printf("Génération vers le bas\n");
       }
       pthread_mutex_unlock(&mutex);
       break;

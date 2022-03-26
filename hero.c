@@ -42,9 +42,7 @@ return i;
 /*
 * Fonction permettant à un héro de ramasser un artefact
 */
-void ramasser_artefact(hero_t hero,artefact_t artefact){
-int k=premiere_place_libre_inventaire_artefact(hero);
-    if(k<5){
-        hero.liste_artefact[k]=artefact;
-    }
+hero_t ramasser_artefact(hero_t hero,artefact_t artefact,int k){
+    hero.liste_artefact[k]=artefact;
+return hero;
 }
