@@ -26,28 +26,37 @@ PROGRAMME DU SERVEUR, IL PREND LE PORT TCP EN ENTREE, LE NOM DU REPETOIRE DE CAR
 int main(){
 
 liste_carte_t* l_carte=init_liste_carte();
-liste_carte_t* l_carte_2=init_liste_carte();
 node_t node;
 node.x=4;
 node.y=5;
 node.emplacement_carte=2;
-//printf("%d\n",l_carte->length);
-inserer_liste(l_carte,node);
-inserer_liste(l_carte,node);
-inserer_liste(l_carte,node);
-inserer_liste(l_carte,node);
-inserer_liste(l_carte,node);
-inserer_liste(l_carte,node);
+node_t nodetest;
+nodetest.x=20;
+nodetest.y=3;
+nodetest.emplacement_carte=4;
 
 
-inserer_liste(l_carte_2,node);
-inserer_liste(l_carte_2,node);
-inserer_liste(l_carte_2,node);
-inserer_liste(l_carte_2,node);
-inserer_liste(l_carte_2,node);
-inserer_liste(l_carte_2,node);
 
-l_carte->liste_suivante=l_carte_2;
+inserer_liste(l_carte,node);
+inserer_liste(l_carte,node);
+inserer_liste(l_carte,node);
+inserer_liste(l_carte,node);
+inserer_liste(l_carte,node);
+inserer_liste(l_carte,node);
+inserer_liste(l_carte,node);
+inserer_liste(l_carte,node);
+inserer_liste(l_carte,node);
+inserer_liste(l_carte,node);
+inserer_liste(l_carte,node);
+inserer_liste(l_carte,node);
+inserer_liste(l_carte,node);
+inserer_liste(l_carte,nodetest);
+inserer_liste(l_carte,nodetest);
+inserer_liste(l_carte,nodetest);
+inserer_liste(l_carte,nodetest);
+
+
+
 afficher_liste_carte(l_carte);
 
 }

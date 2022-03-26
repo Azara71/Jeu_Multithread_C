@@ -1,8 +1,8 @@
 #
 # CONFIGURATION GENERALE (à configurer)
 #
-#editeur serveur client 
-EXEC = test
+
+EXEC = editeur serveur client 
 #On met les .o dans Objets, make depend à chaque fois
 OBJETS = artefact.o monstre.o enregistrement.o fonction_ncurses.o carte.o hero.o
 NOM_PROJET = 
