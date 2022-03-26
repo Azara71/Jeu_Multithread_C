@@ -194,8 +194,6 @@ while(stop_thread==0){
                     carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].indelem=-1;
                 }
 
-
-
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
                 info_client->hero.cooX=info_client->hero.cooX-1;
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
@@ -346,9 +344,10 @@ while((info_directory=readdir(directory))!=NULL){
         }
         pthread_mutex_lock(&mutex);
          carte_t carte_a_envoyer=charger_carte("map/debut.crt");
-         cartes_emplacement_sav[0][0]=enregistrer_new_sav_carte(&carte_a_envoyer,"monde.sav",world_descriptor);
+         cartes_emplacement_sav[0][0]=enregistrer_new_sav_carte(&carte_a_envoyer,world_descriptor);
+         
          pthread_mutex_unlock(&mutex);
-         printf("%ld",cartes_emplacement_sav[0][0]);
+         printf("%ld\n",cartes_emplacement_sav[0][0]);
 
          printf("Enregistrement de la première carte de jeu dans monde.sav");
          

@@ -228,7 +228,7 @@ int fd;
  
 }
 
-off_t enregistrer_new_sav_carte(carte_t* carte,char* name_file,int fd){
+off_t enregistrer_new_sav_carte(carte_t* carte,int fd){
 off_t k;
   if(lseek(fd,0,SEEK_END)==-1){
           perror("Déplacement fichier ");                         /*  FILE  */
