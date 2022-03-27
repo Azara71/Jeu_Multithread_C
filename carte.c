@@ -40,7 +40,7 @@ liste_carte_t *init_liste_carte(){
 /*
 * INSERER UNE MAP SITUÉ DANS UNE LISTE
 */
-liste_carte_t *inserer_liste(liste_carte_t *liste, int x,int y)
+liste_carte_t *inserer_liste(liste_carte_t *liste, int x,int y,carte_t carteainserer)
 {
     if (liste != NULL)
     {
@@ -49,6 +49,7 @@ liste_carte_t *inserer_liste(liste_carte_t *liste, int x,int y)
         {
             carte->x = x;
             carte->y = y;
+            carte->carte = carteainserer;
             if (liste->queue == NULL)
             {
                 carte->suivant = NULL;
@@ -107,6 +108,37 @@ liste_carte_t *remove_map_from_list(liste_carte_t *liste,int x,int y)
     return liste;
 }
 /*
+* 
+*/
+int chercher_map_from_list(liste_carte_t *liste, int x, int y,carte_t carte){
+int found=0;
+    if (liste != NULL)
+    {
+        carte_chainee_t *current = liste->tete;
+        while (current != NULL && !found)
+        {
+            if (current->x==x && current->y==y)
+            {
+                found = 1;
+                return found;
+            }
+            else
+            {
+                current = current->suivant;
+            }
+        }
+    }
+    return found;
+
+}
+
+
+
+
+
+
+
+/*
 * AFFICHAGE D'UNE LISTE CHAINÉE DE CARTE
 */
 void afficher_liste_carte(liste_carte_t *liste)
@@ -136,7 +168,7 @@ tabnodes_t *init_tabnodes_t(){
     {
         tabnode->length = 0;
         tabnode->tab_suivant = NULL;
-        tabnode->endroit_liste_suivante = 0;
+        tabnode->suivant = 0;
     }
     return tabnode;
 }
@@ -154,13 +186,15 @@ tabnodes_t *inserer_tab_nodes(tabnodes_t *tabnode, node_t node)
         }
         else{
              if(tabnode->tab_suivant==NULL){
+
                 tabnodes_t* new_tabnodes_suivant=init_tabnodes_t();
                 tabnode->tab_suivant=new_tabnodes_suivant;
                 inserer_tab_nodes(tabnode->tab_suivant,node);
             }else{
             inserer_tab_nodes(tabnode->tab_suivant,node);
-
             }
+            tabnode->suivant=1;
+
 
         }
 
@@ -218,29 +252,89 @@ off_t trouver_emplacement_par_tabnodes(tabnodes_t *tabnode,int x,int y){
 return pos_to_return;
 }
 
-void ecrire_tab_nodes_dans_fichier(tabnodes_t *tabnode,int fd,off_t emplacement){
+void ecrire_node(node_t node,int fd){
 
-if(lseek(fd,0,emplacement)==-1){
-          perror("Déplacement fichier ");                         /*  FILE  */
+if(write(fd,&node.x,sizeof(int))==-1){
+       perror("Erreur ecriture fichier 1");                         /*  FILE  */
           exit(EXIT_FAILURE);
 }
-if(write(fd,&tabnode,sizeof(tabnode))==-1){
+if(write(fd,&node.y,sizeof(int))==-1){
+       perror("Erreur ecriture fichier 1");                         /*  FILE  */
+          exit(EXIT_FAILURE);
+}
+if(write(fd,&node.emplacement_carte,sizeof(off_t))==-1){
+       perror("Erreur ecriture fichier 1");                         /*  FILE  */
+          exit(EXIT_FAILURE);
+}
+
+}
+
+node_t lire_node(int fd){
+node_t node;
+if(read(fd,&node.x,sizeof(int))==-1){
+       perror("Erreur ecriture fichier 1");                         /*  FILE  */
+          exit(EXIT_FAILURE);
+}
+if(read(fd,&node.y,sizeof(int))==-1){
+       perror("Erreur ecriture fichier 1");                         /*  FILE  */
+          exit(EXIT_FAILURE);
+}
+if(read(fd,&node.emplacement_carte,sizeof(off_t))==-1){
+       perror("Erreur ecriture fichier 1");                         /*  FILE  */
+          exit(EXIT_FAILURE);
+}
+return node;
+}
+
+
+void ecrire_tab_nodes_dans_fichier(tabnodes_t *tabnode,int fd,int k){
+
+if(tabnode!=NULL) {
+if(write(fd,&tabnode->length,sizeof(int))==-1){
+       perror("Erreur ecriture length");                         /*  FILE  */
+          exit(EXIT_FAILURE);
+}
+for(int i=0;i<5;i++){
+    ecrire_node(tabnode->nodes[i],fd);
+}
+if(write(fd,&tabnode->mon_endroit,sizeof(off_t))==-1){
+       perror("Erreur ecriture fichier 1");                         /*  FILE  */
+          exit(EXIT_FAILURE);
+}
+if(write(fd,&tabnode->suivant,sizeof(int))==-1){
+       perror("Erreur ecriture fichier 1");                         /*  FILE  */
+          exit(EXIT_FAILURE);
+}
+
+ecrire_tab_nodes_dans_fichier(tabnode->tab_suivant,fd,k);
+}
+
+
+}
+
+
+tabnodes_t* lire_tab_nodes_dans_fichier(int fd){
+tabnodes_t* tabnode=init_tabnodes_t();
+
+if(read(fd,&tabnode->length,sizeof(int))==-1){
        perror("Erreur ecriture fichier 1");                         /*  FILE  */
           exit(EXIT_FAILURE);
 };
-
+for(int i=0;i<5;i++){
+    tabnode->nodes[i]=lire_node(fd);
 }
-
-tabnodes_t* lire_tab_nodes_dans_fichier(int fd,off_t emplacement){
-tabnodes_t *tabnode=init_tabnodes_t();
-if(lseek(fd,0,emplacement)==-1){
-          perror("Déplacement fichier ");                         /*  FILE  */
-          exit(EXIT_FAILURE);
-}
-if(read(fd,&tabnode,sizeof(tabnode))==-1){
+if(read(fd,&tabnode->mon_endroit,sizeof(off_t))==-1){
        perror("Erreur ecriture fichier 1");                         /*  FILE  */
           exit(EXIT_FAILURE);
-};
+}
+if(read(fd,&tabnode->suivant,sizeof(int))==-1){
+       perror("Erreur ecriture fichier 1");                         /*  FILE  */
+          exit(EXIT_FAILURE);
+}
+if(tabnode->suivant==1){
+    tabnode->tab_suivant=lire_tab_nodes_dans_fichier(fd);
+}
 return tabnode;
 
 }
+

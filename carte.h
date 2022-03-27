@@ -36,7 +36,7 @@ typedef struct tabnodes{
      node_t nodes[5];
      struct tabnodes *tab_suivant;
      off_t mon_endroit;
-     off_t endroit_liste_suivante;
+     int suivant;
 } tabnodes_t;
 
 
@@ -46,9 +46,10 @@ void afficher_carte(WINDOW* fen_affichage,carte_t carte);
 */
 liste_carte_t *init_liste_carte();
 void afficher_liste_carte(liste_carte_t *liste);
-liste_carte_t *inserer_liste(liste_carte_t *liste, int x,int y);
+liste_carte_t *inserer_liste(liste_carte_t *liste, int x,int y,carte_t carteainserer);
 liste_carte_t *remove_map_from_list(liste_carte_t *liste,int x,int y);
 void insertion(liste_carte_t *liste, int x, int y);
+int chercher_map_from_list(liste_carte_t *liste, int x, int y,carte_t carte);
 /*
 * TABNODES DE CARTE
 */
@@ -56,6 +57,6 @@ tabnodes_t *init_tabnodes_t();
 tabnodes_t *inserer_tab_nodes(tabnodes_t *tabnode, node_t node);
 void afficher_tabnodes_t(tabnodes_t *tabnode);
 off_t trouver_emplacement_par_tabnodes(tabnodes_t *tabnode,int x,int y);
-tabnodes_t* lire_tab_nodes_dans_fichier(int fd,off_t emplacement);
-void ecrire_tab_nodes_dans_fichier(tabnodes_t *tabnode,int fd,off_t emplacement);
+tabnodes_t* lire_tab_nodes_dans_fichier(int fd);
+void ecrire_tab_nodes_dans_fichier(tabnodes_t *tabnode,int fd,int k);
 tabnodes_t *remplacer(tabnodes_t *tabnode, node_t node,int num_node);

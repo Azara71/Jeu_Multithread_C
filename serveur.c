@@ -74,6 +74,8 @@ void ramasser_piece_grand_tout(hero_t hero){
 pthread_mutex_t mutex= PTHREAD_MUTEX_INITIALIZER;
 carte_t carte_a_envoyer;
 int stop=0;
+liste_carte_t* liste_carte_active;
+
 
 
 void *thread_client(void *arg){ 
@@ -87,13 +89,30 @@ printf("Connexion du client numero %d\n",info_client->num_client);
 if(info_client->num_client==0){
 
 pthread_mutex_lock(&mutex);
-carte_a_envoyer=charger_carte_monde_sav("monde.sav",info_client->world_descriptor,0);
+//carte_a_envoyer=charger_carte_monde_sav("monde.sav",info_client->world_descriptor,0);
 pthread_mutex_unlock(&mutex);
 
 }
-
-
 info_client->hero=create_hero("H");
+
+pthread_mutex_lock(&mutex);
+// 0 = not found
+  if(chercher_map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer)==0){
+      // => Check dans la table stocké dans le fichier [Devoir la recharger à chaque fois]
+           // Si pas présent dans la table : Insertion dans la table, écrire la table dans le file à l'emplacement 0 et insertion dans la liste chaînée     
+              // Si présent dans la table :   On load à l'emplacement et on insère   
+               liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+  }
+  else{
+          // Si trouvé dans la liste : carte-> Liste_carte[X]
+  }
+    
+     afficher_liste_carte(liste_carte_active);
+
+
+pthread_mutex_unlock(&mutex);
+
+
 pthread_mutex_lock(&mutex);
 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
 pthread_mutex_unlock(&mutex);
@@ -302,9 +321,7 @@ char nom_repertoire[1024];
 pthread_t thread[1024];
 DIR* directory;
 char* cartes[300];
-off_t cartes_emplacement_sav[1024][1024];
-
-
+liste_carte_active=init_liste_carte();
 
 if(argc!=3){
     fprintf(stderr,"Pas assez d'argument");
@@ -337,19 +354,43 @@ while((info_directory=readdir(directory))!=NULL){
 /*
 *  OPENING MONDE.SAV
 */ 
-        int world_descriptor;
-        if((world_descriptor=open("monde.sav",O_CREAT|O_TRUNC|O_RDWR,S_IRUSR|S_IWUSR))==-1){ /*  OPENING   */
-          perror("Erreur ouverture fichier 1");                         /*  FILE  */
-          exit(EXIT_FAILURE);
-        }
-        pthread_mutex_lock(&mutex);
-         carte_t carte_a_envoyer=charger_carte("map/debut.crt");
-         cartes_emplacement_sav[0][0]=enregistrer_new_sav_carte(&carte_a_envoyer,world_descriptor);
-         
-         pthread_mutex_unlock(&mutex);
-         printf("%ld\n",cartes_emplacement_sav[0][0]);
+tabnodes_t* l_carte=init_tabnodes_t();
+node_t node;
+node.x=0;
+node.y=0;
+node.emplacement_carte=0;
 
-         printf("Enregistrement de la première carte de jeu dans monde.sav");
+   
+for(int i=0;i<12;i++){
+    inserer_tab_nodes(l_carte,node);
+}
+
+       
+        int world_descriptor;
+        if((world_descriptor=open("monde.sav",O_CREAT|O_EXCL|O_RDWR,S_IRUSR|S_IWUSR))==-1){
+               if(errno==EEXIST){   
+                   printf("FICHIER EXISTANT\n");     
+                   world_descriptor=open("monde.sav",O_RDWR,S_IRUSR|S_IWUSR);
+                   l_carte=lire_tab_nodes_dans_fichier(world_descriptor);
+                   afficher_tabnodes_t(l_carte);
+               }
+               else{
+                   perror("ERREUR OUVERTURE");
+                   exit(EXIT_FAILURE);
+               }
+        }
+        else{
+                   
+                   printf("Le fichier existe pas");
+                   ecrire_tab_nodes_dans_fichier(l_carte,world_descriptor,0);
+
+               
+        }
+    
+
+       
+
+      //      printf("Enregistrement de la première carte de jeu dans monde.sav");
          
 
 

@@ -22,28 +22,22 @@ PROGRAMME DU SERVEUR, IL PREND LE PORT TCP EN ENTREE, LE NOM DU REPETOIRE DE CAR
 #include <dirent.h>
 #include "hero.h"
 
-
 int main(){
-
 tabnodes_t* l_carte=init_tabnodes_t();
 
-node_t node;
-node.x=4;
-node.y=5;
-node.emplacement_carte=2;
 
    
-for(int i=0;i<20;i++){
-    inserer_tab_nodes(l_carte,node);
-}
-
-
-       
-                int  world_descriptor=open("monde.sav",O_CREAT|O_RDWR,S_IRUSR|S_IWUSR);
-                if(lseek(world_descriptor,0,SEEK_SET)==-1){
+    int world_descriptor=open("monde.sav",O_CREAT|O_RDWR,S_IRUSR|S_IWUSR);
+        if(lseek(world_descriptor,0,SEEK_SET)==-1){
                      perror("Déplacement fichier ");                         /*  FILE  */
                      exit(EXIT_FAILURE);
                 }
-                ecrire_tab_nodes_dans_fichier(l_carte,world_descriptor,0);
-                
+        l_carte=lire_tab_nodes_dans_fichier(world_descriptor);
+        afficher_tabnodes_t(l_carte);
+        
+      
+        
+        
+        
+
 }
