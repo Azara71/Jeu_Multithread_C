@@ -35,6 +35,7 @@ typedef struct tabnodes{
      int length;
      node_t nodes[5];
      struct tabnodes *tab_suivant;
+     off_t mon_endroit;
      off_t endroit_liste_suivante;
 } tabnodes_t;
 
@@ -54,3 +55,7 @@ void insertion(liste_carte_t *liste, int x, int y);
 tabnodes_t *init_tabnodes_t();
 tabnodes_t *inserer_tab_nodes(tabnodes_t *tabnode, node_t node);
 void afficher_tabnodes_t(tabnodes_t *tabnode);
+off_t trouver_emplacement_par_tabnodes(tabnodes_t *tabnode,int x,int y);
+tabnodes_t* lire_tab_nodes_dans_fichier(int fd,off_t emplacement);
+void ecrire_tab_nodes_dans_fichier(tabnodes_t *tabnode,int fd,off_t emplacement);
+tabnodes_t *remplacer(tabnodes_t *tabnode, node_t node,int num_node);

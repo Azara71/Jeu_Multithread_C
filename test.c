@@ -25,11 +25,14 @@ PROGRAMME DU SERVEUR, IL PREND LE PORT TCP EN ENTREE, LE NOM DU REPETOIRE DE CAR
 
 int main(){
 
-liste_carte_t* l_carte=init_liste_carte();
+tabnodes_t* l_carte=init_tabnodes_t();
+tabnodes_t* l_carte_lu=init_tabnodes_t();
+
 node_t node;
 node.x=4;
 node.y=5;
 node.emplacement_carte=2;
+
 node_t nodetest;
 nodetest.x=20;
 nodetest.y=3;
@@ -37,26 +40,20 @@ nodetest.emplacement_carte=4;
 
 
 
-inserer_liste(l_carte,node);
-inserer_liste(l_carte,node);
-inserer_liste(l_carte,node);
-inserer_liste(l_carte,node);
-inserer_liste(l_carte,node);
-inserer_liste(l_carte,node);
-inserer_liste(l_carte,node);
-inserer_liste(l_carte,node);
-inserer_liste(l_carte,node);
-inserer_liste(l_carte,node);
-inserer_liste(l_carte,node);
-inserer_liste(l_carte,node);
-inserer_liste(l_carte,node);
-inserer_liste(l_carte,nodetest);
-inserer_liste(l_carte,nodetest);
-inserer_liste(l_carte,nodetest);
-inserer_liste(l_carte,nodetest);
+for(int i=0;i<17;i++){
+    inserer_tab_nodes(l_carte,node);
+}
 
+int fd;
+if((fd=open("LALALAL",O_CREAT|O_RDWR,S_IRUSR|S_IWUSR))==-1){
+         perror("Erreur ouverture fichier 1");
+         exit(EXIT_FAILURE);
+}
 
-
-afficher_liste_carte(l_carte);
+//afficher_tabnodes_t(l_carte);
+ecrire_tab_nodes_dans_fichier(l_carte,fd,0);
+l_carte_lu=lire_tab_nodes_dans_fichier(fd,0);
+remplacer(l_carte_lu,nodetest,10);
+afficher_tabnodes_t(l_carte_lu);
 
 }

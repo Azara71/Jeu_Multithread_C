@@ -1,6 +1,8 @@
 #include "carte.h"
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
 void afficher_carte(WINDOW* fen_affichage,carte_t carte){
 // AFFICHAGE D'UNE CARTE AU COMPLET
 for(int i=0;i<40;i++){
@@ -166,6 +168,23 @@ tabnodes_t *inserer_tab_nodes(tabnodes_t *tabnode, node_t node)
     return tabnode;
 }
 /*
+* REMPLACE UN NODE DANS UN TABLEAU DE NODE 
+*/
+tabnodes_t *remplacer(tabnodes_t *tabnode, node_t node,int num_node)
+{
+    if(num_node<5){
+        if (tabnode != NULL)
+        {
+         tabnode->nodes[num_node]=node;
+        }
+    }
+    else{
+      num_node=num_node-5;
+      remplacer(tabnode->tab_suivant,node,num_node);
+    }
+    return tabnode;
+}
+/*
 * AFFICHAGE UN TABLEAU DE NODES ET CHACUN DE SES TABLEAUX SUIVANTS
 */
 void afficher_tabnodes_t(tabnodes_t *tabnode){
@@ -181,3 +200,47 @@ void afficher_tabnodes_t(tabnodes_t *tabnode){
 }
 }
 
+off_t trouver_emplacement_par_tabnodes(tabnodes_t *tabnode,int x,int y){
+    off_t pos_to_return=0;
+
+     if (tabnode != NULL)
+    {
+        for(int i=0;i<5;i++){
+           if(tabnode->nodes[i].x==x && tabnode->nodes[i].y==y){
+               pos_to_return=tabnode->nodes[i].emplacement_carte;
+               return pos_to_return;
+           }
+
+        }
+        pos_to_return=trouver_emplacement_par_tabnodes(tabnode->tab_suivant,x,y);
+}
+
+return pos_to_return;
+}
+
+void ecrire_tab_nodes_dans_fichier(tabnodes_t *tabnode,int fd,off_t emplacement){
+
+if(lseek(fd,0,emplacement)==-1){
+          perror("Déplacement fichier ");                         /*  FILE  */
+          exit(EXIT_FAILURE);
+}
+if(write(fd,&tabnode,sizeof(tabnode))==-1){
+       perror("Erreur ecriture fichier 1");                         /*  FILE  */
+          exit(EXIT_FAILURE);
+};
+
+}
+
+tabnodes_t* lire_tab_nodes_dans_fichier(int fd,off_t emplacement){
+tabnodes_t *tabnode=init_tabnodes_t();
+if(lseek(fd,0,emplacement)==-1){
+          perror("Déplacement fichier ");                         /*  FILE  */
+          exit(EXIT_FAILURE);
+}
+if(read(fd,&tabnode,sizeof(tabnode))==-1){
+       perror("Erreur ecriture fichier 1");                         /*  FILE  */
+          exit(EXIT_FAILURE);
+};
+return tabnode;
+
+}
