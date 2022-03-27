@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include "enregistrement.h"
 void afficher_carte(WINDOW* fen_affichage,carte_t carte){
 // AFFICHAGE D'UNE CARTE AU COMPLET
 for(int i=0;i<40;i++){
@@ -252,6 +253,26 @@ off_t trouver_emplacement_par_tabnodes(tabnodes_t *tabnode,int x,int y){
 return pos_to_return;
 }
 
+int dans_tabnodes(tabnodes_t *tabnode,int x,int y){
+int found=0;
+  if (tabnode != NULL)
+    {
+        for(int i=0;i<5;i++){
+           if(tabnode->nodes[i].x==x && tabnode->nodes[i].y==y){
+               found=1;
+               return found;
+           }
+
+        }
+        found=trouver_emplacement_par_tabnodes(tabnode->tab_suivant,x,y);
+    }
+
+return found;
+}
+
+
+
+
 void ecrire_node(node_t node,int fd){
 
 if(write(fd,&node.x,sizeof(int))==-1){
@@ -338,3 +359,25 @@ return tabnode;
 
 }
 
+void rajouter_carte_monde_sav(int world_descriptor,tabnodes_t* l_carte,carte_t carte_a_envoyer){
+
+        off_t k;
+        if((k=lseek(world_descriptor,0,SEEK_END))==-1){
+             perror("Déplacement fichier ");                         /*  FILE  */
+             exit(EXIT_FAILURE);
+        }
+        node_t node;
+        node.x=0;
+        node.y=0;
+        node.emplacement_carte=k;
+        l_carte=remplacer(l_carte,node,0);
+        enregistrer_new_sav_carte(&carte_a_envoyer,world_descriptor);
+                    if((k=lseek(world_descriptor,0,SEEK_SET))==-1){
+                        perror("Déplacement fichier ");                         /*  FILE  */
+                        exit(EXIT_FAILURE);
+                    }
+                    ecrire_tab_nodes_dans_fichier(l_carte,world_descriptor,0);
+
+                   afficher_tabnodes_t(l_carte);
+
+}
