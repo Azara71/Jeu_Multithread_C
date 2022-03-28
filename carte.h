@@ -50,6 +50,8 @@ liste_carte_t *inserer_liste(liste_carte_t *liste, int x,int y,carte_t carteains
 liste_carte_t *remove_map_from_list(liste_carte_t *liste,int x,int y);
 void insertion(liste_carte_t *liste, int x, int y);
 int chercher_map_from_list(liste_carte_t *liste, int x, int y,carte_t carte);
+carte_t map_from_list(liste_carte_t *liste, int x, int y);
+liste_carte_t* mettre_a_jour_map_in_list(liste_carte_t *liste, int x, int y,carte_t carte);
 /*
 * TABNODES DE CARTE
 */

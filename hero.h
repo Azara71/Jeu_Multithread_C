@@ -15,8 +15,8 @@ unsigned short level;
 unsigned short experience;
 unsigned short cooX;
 unsigned short cooY;
-unsigned short carteX;
-unsigned short carteY;
+int carteX;
+int carteY;
 int nb_piece_grand_tout;
 artefact_t liste_artefact[5];
 

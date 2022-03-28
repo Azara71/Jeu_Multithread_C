@@ -130,10 +130,27 @@ int found=0;
         }
     }
     return found;
-
 }
 
+carte_t map_from_list(liste_carte_t *liste, int x, int y){
 
+    if (liste != NULL)
+    {
+        carte_chainee_t *current = liste->tete;
+        while (current != NULL)
+        {
+            if (current->x==x && current->y==y)
+            {
+                return current->carte;
+            }
+            else
+            {
+                current = current->suivant;
+            }
+        }
+    }
+    return charger_carte_default();
+}
 
 
 
@@ -158,6 +175,28 @@ void afficher_liste_carte(liste_carte_t *liste)
     printf("NULL\n");
 }
 
+liste_carte_t* mettre_a_jour_map_in_list(liste_carte_t *liste, int x, int y,carte_t carte){
+
+if (liste != NULL)
+    {
+        carte_chainee_t *current = liste->tete;
+        while (current != NULL)
+        {
+            if (current->x==x && current->y==y)
+            {
+                current->carte=carte;
+                return liste;
+            }
+            else
+            {
+                current = current->suivant;
+            }
+        }
+
+    }
+return liste;
+
+}
 
 
 /*
@@ -338,18 +377,18 @@ tabnodes_t* lire_tab_nodes_dans_fichier(int fd){
 tabnodes_t* tabnode=init_tabnodes_t();
 
 if(read(fd,&tabnode->length,sizeof(int))==-1){
-       perror("Erreur ecriture fichier 1");                         /*  FILE  */
+       perror("Erreur ecriture fichier 1");                         
           exit(EXIT_FAILURE);
 };
 for(int i=0;i<5;i++){
     tabnode->nodes[i]=lire_node(fd);
 }
 if(read(fd,&tabnode->mon_endroit,sizeof(off_t))==-1){
-       perror("Erreur ecriture fichier 1");                         /*  FILE  */
+       perror("Erreur ecriture fichier 1");                         
           exit(EXIT_FAILURE);
 }
 if(read(fd,&tabnode->suivant,sizeof(int))==-1){
-       perror("Erreur ecriture fichier 1");                         /*  FILE  */
+       perror("Erreur ecriture fichier 1");                         
           exit(EXIT_FAILURE);
 }
 if(tabnode->suivant==1){
@@ -358,12 +397,14 @@ if(tabnode->suivant==1){
 return tabnode;
 
 }
-
+/*
+* Rajoute une carte à la fin du fichier décrit par world_descriptor, ainsi que dans le tableau de nodes du fichier.
+*/
 void rajouter_carte_monde_sav(int world_descriptor,tabnodes_t* l_carte,carte_t carte_a_envoyer){
 
         off_t k;
         if((k=lseek(world_descriptor,0,SEEK_END))==-1){
-             perror("Déplacement fichier ");                         /*  FILE  */
+             perror("Déplacement fichier ");                       
              exit(EXIT_FAILURE);
         }
         node_t node;
@@ -372,12 +413,14 @@ void rajouter_carte_monde_sav(int world_descriptor,tabnodes_t* l_carte,carte_t c
         node.emplacement_carte=k;
         l_carte=remplacer(l_carte,node,0);
         enregistrer_new_sav_carte(&carte_a_envoyer,world_descriptor);
-                    if((k=lseek(world_descriptor,0,SEEK_SET))==-1){
-                        perror("Déplacement fichier ");                         /*  FILE  */
-                        exit(EXIT_FAILURE);
-                    }
-                    ecrire_tab_nodes_dans_fichier(l_carte,world_descriptor,0);
-
-                   afficher_tabnodes_t(l_carte);
+        if((k=lseek(world_descriptor,0,SEEK_SET))==-1){
+            perror("Déplacement fichier ");                       
+            exit(EXIT_FAILURE);
+        }
+        ecrire_tab_nodes_dans_fichier(l_carte,world_descriptor,0);
+        afficher_tabnodes_t(l_carte);
 
 }
+
+
+

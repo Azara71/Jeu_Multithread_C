@@ -31,7 +31,7 @@ tabnodes_t* l_carte=init_tabnodes_t();
         if(lseek(world_descriptor,0,SEEK_SET)==-1){
                      perror("Déplacement fichier ");                         /*  FILE  */
                      exit(EXIT_FAILURE);
-                }
+        }
         l_carte=lire_tab_nodes_dans_fichier(world_descriptor);
         afficher_tabnodes_t(l_carte);
         
