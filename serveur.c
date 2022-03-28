@@ -187,20 +187,18 @@ while(stop_thread==0){
                     carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].indelem=-1;
                 }
 
-
-
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
                 info_client->hero.cooY=info_client->hero.cooY-1;
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
                 mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX, info_client->hero.carteY,carte_a_envoyer);
             }
       }
-      else{ // Changement de map
+      else{ // Changement de map vers le haut
             carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
             carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
             mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
             info_client->hero.cooY=19;    
-            info_client->hero.carteY=info_client->hero.carteY-1;   
+            info_client->hero.carteY=info_client->hero.carteY+1;   
 
           
             // Si pas dans la liste => Cherche dans la table
@@ -265,7 +263,42 @@ while(stop_thread==0){
             }
       }
       else{
-        printf("Génération vers la gauche\n");
+            carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
+            carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
+            mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+            info_client->hero.cooX=39;    
+            info_client->hero.carteX=info_client->hero.carteX-1;   
+
+          
+            // Si pas dans la liste => Cherche dans la table
+            if(chercher_map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer)==0){  
+                    if(lseek(world_descriptor,0,SEEK_SET)==-1){
+                            perror("Déplacement fichier ");                         /*  FILE  */
+                            exit(EXIT_FAILURE);
+                    }
+                    l_carte=lire_tab_nodes_dans_fichier(world_descriptor);
+                    if(dans_tabnodes(l_carte,info_client->hero.carteX,info_client->hero.carteY)==0){ //0=absent, 1== présent
+                           int numero_carte_generer=generer_nombre_aleatoire(nb_carte_dans_repertoire);
+                           carte_a_envoyer=charger_carte(cartes[numero_carte_generer]); 
+                           rajouter_carte_monde_sav(world_descriptor,l_carte,carte_a_envoyer,info_client->hero.carteX,info_client->hero.carteY);  // On la rajoute dans l'emplacement numéro 1, et on l'enregistre   
+                           liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                           afficher_tabnodes_t(l_carte);
+                          // Si pas présent dans la table : génère la map, insertion dans la table, écrire la table dans le file à l'emplacement 0 et insertion dans la liste chaînée     
+                            
+                            
+                     }
+                     else{
+                          off_t emplacement_carte_to_load=trouver_emplacement_par_tabnodes(l_carte,info_client->hero.carteX,info_client->hero.carteY);   
+                          carte_a_envoyer=charger_carte_monde_sav("monde.sav",world_descriptor,emplacement_carte_to_load);
+                          carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
+                          liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                     }
+            }
+            else{ // Si dans la liste
+                  carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
+                  carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
+                  mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+            }
       }
       pthread_mutex_unlock(&mutex);
       break;
@@ -299,14 +332,49 @@ while(stop_thread==0){
             }
       }
       else{
-        printf("Génération vers la droite\n");
+            carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
+            carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
+            mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+            info_client->hero.cooX=0;    
+            info_client->hero.carteX=info_client->hero.carteX+1;   
+
+          
+            // Si pas dans la liste => Cherche dans la table
+            if(chercher_map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer)==0){  
+                    if(lseek(world_descriptor,0,SEEK_SET)==-1){
+                            perror("Déplacement fichier ");                         /*  FILE  */
+                            exit(EXIT_FAILURE);
+                    }
+                    l_carte=lire_tab_nodes_dans_fichier(world_descriptor);
+                    if(dans_tabnodes(l_carte,info_client->hero.carteX,info_client->hero.carteY)==0){ //0=absent, 1== présent
+                           int numero_carte_generer=generer_nombre_aleatoire(nb_carte_dans_repertoire);
+                           carte_a_envoyer=charger_carte(cartes[numero_carte_generer]); 
+                           rajouter_carte_monde_sav(world_descriptor,l_carte,carte_a_envoyer,info_client->hero.carteX,info_client->hero.carteY);  // On la rajoute dans l'emplacement numéro 1, et on l'enregistre   
+                           liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                           afficher_tabnodes_t(l_carte);
+                          // Si pas présent dans la table : génère la map, insertion dans la table, écrire la table dans le file à l'emplacement 0 et insertion dans la liste chaînée     
+                            
+                            
+                     }
+                     else{
+                          off_t emplacement_carte_to_load=trouver_emplacement_par_tabnodes(l_carte,info_client->hero.carteX,info_client->hero.carteY);   
+                          carte_a_envoyer=charger_carte_monde_sav("monde.sav",world_descriptor,emplacement_carte_to_load);
+                          carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
+                          liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                     }
+            }
+            else{ // Si dans la liste
+                  carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
+                  carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
+                  mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+            }
       }
       pthread_mutex_unlock(&mutex);
       break;
 
       case BOTTOM:
       pthread_mutex_lock(&mutex);
-      if(info_client->hero.cooY+1<20){
+      if(info_client->hero.cooY+1<=19){
            if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY+1].code_couleur!=2 && carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY+1].elem!='X'){
                 if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY+1].elem=='$'){
                         if(generer_nombre_aleatoire(2)==1){
@@ -334,7 +402,42 @@ while(stop_thread==0){
 
       }
       else{
-        printf("Génération vers le bas\n");
+            carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
+            carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
+            mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+            info_client->hero.cooY=0;    
+            info_client->hero.carteY=info_client->hero.carteY-1;   
+
+          
+            // Si pas dans la liste => Cherche dans la table
+            if(chercher_map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer)==0){  
+                    if(lseek(world_descriptor,0,SEEK_SET)==-1){
+                            perror("Déplacement fichier ");                         /*  FILE  */
+                            exit(EXIT_FAILURE);
+                    }
+                    l_carte=lire_tab_nodes_dans_fichier(world_descriptor);
+                    if(dans_tabnodes(l_carte,info_client->hero.carteX,info_client->hero.carteY)==0){ //0=absent, 1== présent
+                           int numero_carte_generer=generer_nombre_aleatoire(nb_carte_dans_repertoire);
+                           carte_a_envoyer=charger_carte(cartes[numero_carte_generer]); 
+                           rajouter_carte_monde_sav(world_descriptor,l_carte,carte_a_envoyer,info_client->hero.carteX,info_client->hero.carteY);  // On la rajoute dans l'emplacement numéro 1, et on l'enregistre   
+                           liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                           afficher_tabnodes_t(l_carte);
+                          // Si pas présent dans la table : génère la map, insertion dans la table, écrire la table dans le file à l'emplacement 0 et insertion dans la liste chaînée     
+                            
+                            
+                     }
+                     else{
+                          off_t emplacement_carte_to_load=trouver_emplacement_par_tabnodes(l_carte,info_client->hero.carteX,info_client->hero.carteY);   
+                          carte_a_envoyer=charger_carte_monde_sav("monde.sav",world_descriptor,emplacement_carte_to_load);
+                          carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
+                          liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                     }
+            }
+            else{ // Si dans la liste
+                  carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
+                  carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
+                  mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+            }
       }
       pthread_mutex_unlock(&mutex);
       break;
