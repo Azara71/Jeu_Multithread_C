@@ -233,7 +233,8 @@ off_t k;
   if(lseek(fd,0,SEEK_END)==-1){
           perror("Déplacement fichier ");                         /*  FILE  */
           exit(EXIT_FAILURE);
-  }
+  }    
+
 
    if(write(fd,carte->cases,800*sizeof(case_t))==-1){
        perror("Erreur ecriture fichier 1");                         /*  FILE  */
@@ -257,6 +258,7 @@ off_t k;
           perror("Déplacement fichier ");                         /*  FILE  */
           exit(EXIT_FAILURE);
   }
+  
   return k;
 }
 

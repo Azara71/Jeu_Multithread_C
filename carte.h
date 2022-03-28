@@ -32,6 +32,7 @@ typedef struct node{
 }node_t;
 
 typedef struct tabnodes{
+     int length_total;
      int length;
      node_t nodes[5];
      struct tabnodes *tab_suivant;
@@ -62,5 +63,5 @@ off_t trouver_emplacement_par_tabnodes(tabnodes_t *tabnode,int x,int y);
 tabnodes_t* lire_tab_nodes_dans_fichier(int fd);
 void ecrire_tab_nodes_dans_fichier(tabnodes_t *tabnode,int fd,int k);
 tabnodes_t *remplacer(tabnodes_t *tabnode, node_t node,int num_node);
-void rajouter_carte_monde_sav(int world_descriptor,tabnodes_t* l_carte,carte_t carte_a_envoyer);
+void rajouter_carte_monde_sav(int world_descriptor,tabnodes_t* l_carte,carte_t carte_a_envoyer,int x,int y);
 int dans_tabnodes(tabnodes_t *tabnode,int x,int y);

@@ -35,10 +35,7 @@ node.emplacement_carte=2;
    
 for(int i=0;i<20;i++){
     inserer_tab_nodes(l_carte,node);
-}
-
-
-       
+}      
                 int  world_descriptor=open("monde.sav",O_CREAT|O_RDWR,S_IRUSR|S_IWUSR);
                 if(lseek(world_descriptor,0,SEEK_SET)==-1){
                      perror("Déplacement fichier ");                         /*  FILE  */

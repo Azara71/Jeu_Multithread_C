@@ -223,6 +223,9 @@ tabnodes_t *inserer_tab_nodes(tabnodes_t *tabnode, node_t node)
         if(tabnode->length<5){
             tabnode->nodes[tabnode->length]=node;
             tabnode->length++; 
+            if(node.emplacement_carte!=0){
+                  tabnode->length_total++; 
+            }
         }
         else{
              if(tabnode->tab_suivant==NULL){
@@ -258,6 +261,8 @@ tabnodes_t *remplacer(tabnodes_t *tabnode, node_t node,int num_node)
     }
     return tabnode;
 }
+
+
 /*
 * AFFICHAGE UN TABLEAU DE NODES ET CHACUN DE SES TABLEAUX SUIVANTS
 */
@@ -313,7 +318,6 @@ return found;
 
 
 void ecrire_node(node_t node,int fd){
-
 if(write(fd,&node.x,sizeof(int))==-1){
        perror("Erreur ecriture fichier 1");                         /*  FILE  */
           exit(EXIT_FAILURE);
@@ -354,6 +358,10 @@ if(write(fd,&tabnode->length,sizeof(int))==-1){
        perror("Erreur ecriture length");                         /*  FILE  */
           exit(EXIT_FAILURE);
 }
+if(write(fd,&tabnode->length_total,sizeof(int))==-1){
+       perror("Erreur ecriture length");                         /*  FILE  */
+          exit(EXIT_FAILURE);
+}
 for(int i=0;i<5;i++){
     ecrire_node(tabnode->nodes[i],fd);
 }
@@ -380,6 +388,10 @@ if(read(fd,&tabnode->length,sizeof(int))==-1){
        perror("Erreur ecriture fichier 1");                         
           exit(EXIT_FAILURE);
 };
+if(read(fd,&tabnode->length_total,sizeof(int))==-1){
+       perror("Erreur ecriture length");                         /*  FILE  */
+          exit(EXIT_FAILURE);
+}
 for(int i=0;i<5;i++){
     tabnode->nodes[i]=lire_node(fd);
 }
@@ -400,7 +412,7 @@ return tabnode;
 /*
 * Rajoute une carte à la fin du fichier décrit par world_descriptor, ainsi que dans le tableau de nodes du fichier.
 */
-void rajouter_carte_monde_sav(int world_descriptor,tabnodes_t* l_carte,carte_t carte_a_envoyer){
+void rajouter_carte_monde_sav(int world_descriptor,tabnodes_t* l_carte,carte_t carte_a_envoyer,int x,int y){
 
         off_t k;
         if((k=lseek(world_descriptor,0,SEEK_END))==-1){
@@ -408,12 +420,13 @@ void rajouter_carte_monde_sav(int world_descriptor,tabnodes_t* l_carte,carte_t c
              exit(EXIT_FAILURE);
         }
         node_t node;
-        node.x=0;
-        node.y=0;
+        node.x=x;
+        node.y=y;
         node.emplacement_carte=k;
-        l_carte=remplacer(l_carte,node,0);
+        l_carte=remplacer(l_carte,node,l_carte->length_total);
+        l_carte->length_total=l_carte->length_total+1;
         enregistrer_new_sav_carte(&carte_a_envoyer,world_descriptor);
-        if((k=lseek(world_descriptor,0,SEEK_SET))==-1){
+        if((lseek(world_descriptor,0,SEEK_SET))==-1){
             perror("Déplacement fichier ");                       
             exit(EXIT_FAILURE);
         }

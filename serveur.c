@@ -76,7 +76,8 @@ int stop=0;
 liste_carte_t* liste_carte_active;
 tabnodes_t* l_carte;
 int world_descriptor;
-
+int nb_carte_dans_repertoire;
+char* cartes[300];
 
 
 void *thread_client(void *arg){ 
@@ -106,10 +107,8 @@ if(chercher_map_from_list(liste_carte_active,info_client->hero.carteX,info_clien
               // Si présent dans la table :   On load à l'emplacement et on insère   
                 off_t emplacement_carte_to_load=trouver_emplacement_par_tabnodes(l_carte,info_client->hero.carteX,info_client->hero.carteY);   
                 carte_a_envoyer=charger_carte_monde_sav("monde.sav",world_descriptor,emplacement_carte_to_load);
+                carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
                 liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
-
-
-         
             }
   }
   else{
@@ -117,15 +116,12 @@ if(chercher_map_from_list(liste_carte_active,info_client->hero.carteX,info_clien
           carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
           carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
           mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
-
+            
   }
 afficher_liste_carte(liste_carte_active);
 pthread_mutex_unlock(&mutex);
 
 
-pthread_mutex_lock(&mutex);
-carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
-pthread_mutex_unlock(&mutex);
 /*
 * On lit ce que nous a envoyé le client
 */
@@ -199,8 +195,44 @@ while(stop_thread==0){
                 mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX, info_client->hero.carteY,carte_a_envoyer);
             }
       }
-      else{
-        printf("Génération vers le haut\n");
+      else{ // Changement de map
+            carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
+            carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
+            mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+            info_client->hero.cooY=19;    
+            info_client->hero.carteY=info_client->hero.carteY-1;   
+
+          
+            // Si pas dans la liste => Cherche dans la table
+            if(chercher_map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer)==0){  
+                    if(lseek(world_descriptor,0,SEEK_SET)==-1){
+                            perror("Déplacement fichier ");                         /*  FILE  */
+                            exit(EXIT_FAILURE);
+                    }
+                    l_carte=lire_tab_nodes_dans_fichier(world_descriptor);
+                    if(dans_tabnodes(l_carte,info_client->hero.carteX,info_client->hero.carteY)==0){ //0=absent, 1== présent
+                           int numero_carte_generer=generer_nombre_aleatoire(nb_carte_dans_repertoire);
+                           carte_a_envoyer=charger_carte(cartes[numero_carte_generer]); 
+                           rajouter_carte_monde_sav(world_descriptor,l_carte,carte_a_envoyer,info_client->hero.carteX,info_client->hero.carteY);  // On la rajoute dans l'emplacement numéro 1, et on l'enregistre   
+                           liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                           afficher_tabnodes_t(l_carte);
+                          // Si pas présent dans la table : génère la map, insertion dans la table, écrire la table dans le file à l'emplacement 0 et insertion dans la liste chaînée     
+                            
+                            
+                     }
+                     else{
+                          off_t emplacement_carte_to_load=trouver_emplacement_par_tabnodes(l_carte,info_client->hero.carteX,info_client->hero.carteY);   
+                          carte_a_envoyer=charger_carte_monde_sav("monde.sav",world_descriptor,emplacement_carte_to_load);
+                          carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
+                          liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                     }
+            }
+            else{ // Si dans la liste
+                  carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
+                  carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
+                  mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+            }
+                 
       }
       pthread_mutex_unlock(&mutex);
       break;
@@ -315,6 +347,7 @@ while(stop_thread==0){
 */
 pthread_mutex_lock(&mutex);
 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
+mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
 pthread_mutex_unlock(&mutex);
 
 
@@ -336,7 +369,6 @@ int nb_client=0;
 char nom_repertoire[1024];
 pthread_t thread[1024];
 DIR* directory;
-char* cartes[300];
 liste_carte_active=init_liste_carte();
 carte_t carte_a_envoyer;
 
@@ -354,7 +386,6 @@ srand(time(NULL));
 
 
 struct dirent* info_directory;
-int nb_carte_dans_repertoire=0;
 char* carte_to_load;
 while((info_directory=readdir(directory))!=NULL){
      if (strstr(info_directory->d_name, ".crt") != NULL) {
@@ -376,11 +407,11 @@ node_t node;
 node.x=0;
 node.y=0;
 node.emplacement_carte=0;
-
    
 for(int i=0;i<50;i++){
     inserer_tab_nodes(l_carte,node);
 }
+
         // On tente d'ouvrir le fichier pour tester s'il existe ou non
         if((world_descriptor=open("monde.sav",O_CREAT|O_EXCL|O_RDWR,S_IRUSR|S_IWUSR))==-1){
                if(errno==EEXIST){   
@@ -390,6 +421,7 @@ for(int i=0;i<50;i++){
                         exit(EXIT_FAILURE);
                    }
                    l_carte=lire_tab_nodes_dans_fichier(world_descriptor); // Traitement tableau nodes
+
                }
                else{
                     perror("ERREUR OUVERTURE");
@@ -401,8 +433,10 @@ for(int i=0;i<50;i++){
                    printf("Le fichier existe pas");
                    ecrire_tab_nodes_dans_fichier(l_carte,world_descriptor,0);
                    carte_a_envoyer=charger_carte("map/debut.crt"); // On charge la carte de départ.
-                   rajouter_carte_monde_sav(world_descriptor,l_carte,carte_a_envoyer);  // On la rajoute dans l'emplacement numéro 1, et on l'enregistre    
+                   rajouter_carte_monde_sav(world_descriptor,l_carte,carte_a_envoyer,0,0);  // On la rajoute dans l'emplacement numéro 1, et on l'enregistre   
+
         }
+    printf("%d",l_carte->length_total);
 
 // Création de la socket
 if((fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) {
