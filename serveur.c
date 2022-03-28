@@ -168,9 +168,9 @@ while(stop_thread==0){
       */
       case TOP:
       pthread_mutex_lock(&mutex);
-      if(info_client->hero.cooY-1>=0){
-         if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].code_couleur!=2 && carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem!='X'){
-                if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem=='$'){
+      if(info_client->hero.cooY-1>=0){// Si tu peux bouger sans changer de map.
+         if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].code_couleur!=2 && carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem!='X'){ // Si pas d'obstacle
+                if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem=='$'){ // Si y'a un trésor on l'interprête
                         if(generer_nombre_aleatoire(2)==1){
                             printf("Heal de %d",info_client->num_client);
                             info_client->hero.health=info_client->hero.health_max;
@@ -179,7 +179,7 @@ while(stop_thread==0){
                             ramasser_piece_grand_tout(info_client->hero);
                         }    
                 }
-                if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem=='A'){
+                if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem=='A'){ // Si il y a un artefact on le ramasse au premier emplacement libre
                     int  id_cartefact_a_ramasser=carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].indelem;
                     int premiere_place_libre=premiere_place_libre_inventaire_artefact(info_client->hero);
                     info_client->hero=ramasser_artefact(info_client->hero,carte_a_envoyer.artefacts[id_cartefact_a_ramasser],premiere_place_libre);
@@ -204,7 +204,7 @@ while(stop_thread==0){
             // Si pas dans la liste => Cherche dans la table
             if(chercher_map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer)==0){  
                     if(lseek(world_descriptor,0,SEEK_SET)==-1){
-                            perror("Déplacement fichier ");                         /*  FILE  */
+                            perror("Déplacement fichier ");                        
                             exit(EXIT_FAILURE);
                     }
                     l_carte=lire_tab_nodes_dans_fichier(world_descriptor);
@@ -225,7 +225,7 @@ while(stop_thread==0){
                           liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
                      }
             }
-            else{ // Si dans la liste
+            else{// Cependant, si elle est déjà activer par un joueur, alors on la charge grâce à la liste.
                   carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
                   carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
                   mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
@@ -237,10 +237,10 @@ while(stop_thread==0){
 
       case LEFT:
       pthread_mutex_lock(&mutex);
-      if(info_client->hero.cooX-1>=0){
+      if(info_client->hero.cooX-1>=0){ // Si tu peux bouger sans changer de map.
             if(carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].code_couleur!=2 && carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].elem!='X'){
-                if(carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].elem=='$'){
-                        if(generer_nombre_aleatoire(2)==1){
+                if(carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].elem=='$'){ // Si il y  a un trésor dans la case de départ
+                        if(generer_nombre_aleatoire(2)==1){             // détermination de s'il s'agit de heal ou d'une piece de grand tout.
                             printf("Heal de %d",info_client->num_client);
                             info_client->hero.health=info_client->hero.health_max;
                         }
@@ -248,7 +248,7 @@ while(stop_thread==0){
                             ramasser_piece_grand_tout(info_client->hero);
                         }    
                 }
-                if(carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].elem=='A'){
+                if(carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].elem=='A'){// Si il y y a un artefact alors tu le ramasse dans la première pièce de ton inventaire libre.
                     int  id_cartefact_a_ramasser=carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].indelem;
                     int premiere_place_libre=premiere_place_libre_inventaire_artefact(info_client->hero);
                     info_client->hero=ramasser_artefact(info_client->hero,carte_a_envoyer.artefacts[id_cartefact_a_ramasser],premiere_place_libre);
@@ -256,45 +256,45 @@ while(stop_thread==0){
                     carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].indelem=-1;
                 }
 
-                carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
+                carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' '; // Mise à jour de la map dans la liste de map
                 info_client->hero.cooX=info_client->hero.cooX-1;
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
-                 mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
             }
       }
-      else{
-            carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
-            carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
-            mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
-            info_client->hero.cooX=39;    
-            info_client->hero.carteX=info_client->hero.carteX-1;   
+      else{// Si tu dois générer une map
+            carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY); // Pour reprendre la map à jour
+            carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';                     // Pour supprimer le H à l'ancienne case
+            mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);    // Pour mettre la map à jour
+
+            info_client->hero.cooX=39;                                                                          // On repop le perso à l'extrémité
+            info_client->hero.carteX=info_client->hero.carteX-1;                                                // On décrémente d'une carte.
 
           
-            // Si pas dans la liste => Cherche dans la table
-            if(chercher_map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer)==0){  
+            if(chercher_map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer)==0){  // Si pas dans la liste des cartes actives
                     if(lseek(world_descriptor,0,SEEK_SET)==-1){
-                            perror("Déplacement fichier ");                         /*  FILE  */
+                            perror("Déplacement fichier ");                         
                             exit(EXIT_FAILURE);
                     }
-                    l_carte=lire_tab_nodes_dans_fichier(world_descriptor);
-                    if(dans_tabnodes(l_carte,info_client->hero.carteX,info_client->hero.carteY)==0){ //0=absent, 1== présent
+                    l_carte=lire_tab_nodes_dans_fichier(world_descriptor); // On lit le tableau de nodes du fichier monde.sav
+                    if(dans_tabnodes(l_carte,info_client->hero.carteX,info_client->hero.carteY)==0){ // Si il est absent du tableau de nodes, on génére une map aléatoire.
                            int numero_carte_generer=generer_nombre_aleatoire(nb_carte_dans_repertoire);
                            carte_a_envoyer=charger_carte(cartes[numero_carte_generer]); 
-                           rajouter_carte_monde_sav(world_descriptor,l_carte,carte_a_envoyer,info_client->hero.carteX,info_client->hero.carteY);  // On la rajoute dans l'emplacement numéro 1, et on l'enregistre   
+                           rajouter_carte_monde_sav(world_descriptor,l_carte,carte_a_envoyer,info_client->hero.carteX,info_client->hero.carteY);    
                            liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
                            afficher_tabnodes_t(l_carte);
                           // Si pas présent dans la table : génère la map, insertion dans la table, écrire la table dans le file à l'emplacement 0 et insertion dans la liste chaînée     
                             
                             
                      }
-                     else{
+                     else{ // Si présent, on cherche l'emplacement k grâce au tableau de nodes, et on charge la map à l'emplacement k, qu'on place dans la liste des cartes actives.
                           off_t emplacement_carte_to_load=trouver_emplacement_par_tabnodes(l_carte,info_client->hero.carteX,info_client->hero.carteY);   
                           carte_a_envoyer=charger_carte_monde_sav("monde.sav",world_descriptor,emplacement_carte_to_load);
                           carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
                           liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
                      }
             }
-            else{ // Si dans la liste
+            else{ // Cependant, si elle est déjà activer par un joueur, alors on la charge grâce à la liste.
                   carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
                   carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
                   mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
@@ -363,7 +363,7 @@ while(stop_thread==0){
                           liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
                      }
             }
-            else{ // Si dans la liste
+            else{ // Cependant, si elle est déjà activer par un jour, alors on la charge grâce à la liste.
                   carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
                   carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
                   mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
@@ -409,31 +409,29 @@ while(stop_thread==0){
             info_client->hero.carteY=info_client->hero.carteY-1;   
 
           
-            // Si pas dans la liste => Cherche dans la table
-            if(chercher_map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer)==0){  
+            if(chercher_map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer)==0){  // Si pas dans la liste active, on regarde dans le tableau de nodes
                     if(lseek(world_descriptor,0,SEEK_SET)==-1){
                             perror("Déplacement fichier ");                         /*  FILE  */
                             exit(EXIT_FAILURE);
                     }
-                    l_carte=lire_tab_nodes_dans_fichier(world_descriptor);
-                    if(dans_tabnodes(l_carte,info_client->hero.carteX,info_client->hero.carteY)==0){ //0=absent, 1== présent
-                           int numero_carte_generer=generer_nombre_aleatoire(nb_carte_dans_repertoire);
-                           carte_a_envoyer=charger_carte(cartes[numero_carte_generer]); 
-                           rajouter_carte_monde_sav(world_descriptor,l_carte,carte_a_envoyer,info_client->hero.carteX,info_client->hero.carteY);  // On la rajoute dans l'emplacement numéro 1, et on l'enregistre   
-                           liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                    l_carte=lire_tab_nodes_dans_fichier(world_descriptor);       
+                    if(dans_tabnodes(l_carte,info_client->hero.carteX,info_client->hero.carteY)==0){ //Si il est absent du tableau de nodes
+                           int numero_carte_generer=generer_nombre_aleatoire(nb_carte_dans_repertoire); // On génère un nombre aléatoire
+                           carte_a_envoyer=charger_carte(cartes[numero_carte_generer]);  // Puis ce nombre nous donne le numéro de map
+                           rajouter_carte_monde_sav(world_descriptor,l_carte,carte_a_envoyer,info_client->hero.carteX,info_client->hero.carteY);  // Qu'on rajoute au sein de notre monde.sav
+                           liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer); // Et de notre liste.
                            afficher_tabnodes_t(l_carte);
-                          // Si pas présent dans la table : génère la map, insertion dans la table, écrire la table dans le file à l'emplacement 0 et insertion dans la liste chaînée     
                             
                             
                      }
-                     else{
+                     else{// Si il est dans le tableau de nodes alors on load la carte grâce à l'emplacement obtenu dans le tableau de nodes
                           off_t emplacement_carte_to_load=trouver_emplacement_par_tabnodes(l_carte,info_client->hero.carteX,info_client->hero.carteY);   
                           carte_a_envoyer=charger_carte_monde_sav("monde.sav",world_descriptor,emplacement_carte_to_load);
                           carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
                           liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
                      }
             }
-            else{ // Si dans la liste
+            else{// Cependant, si elle est déjà activer par un joueur, alors on la charge grâce à la liste.
                   carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
                   carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
                   mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
