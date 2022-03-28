@@ -172,7 +172,7 @@ else{ // Si ce n'est pas un changement de couleur simple
               wattroff(fenetre_carte,COLOR_PAIR(GREEN));
 }
   if(selected_char=='$'){
-       if(carte_jeu.cases[posX-1][posY-1].elem =='$' ||carte_jeu.cases[posX-1][posY-1].elem =='X' || carte_jeu.cases[posX-1][posY-1].elem =='s'){// Si on ne va pas remplacer un M ou un A
+       if((carte_jeu.cases[posX-1][posY-1].elem =='$' ||carte_jeu.cases[posX-1][posY-1].elem =='X' || carte_jeu.cases[posX-1][posY-1].elem =='s') && carte_jeu.cases[posX-1][posY-1].code_couleur!=BLUE ){// Si on ne va pas remplacer un M ou un A
            mvwprintw(fenetre_carte,posY,posX,"$");
            carte_jeu.cases[posX-1][posY-1].elem='$';
        }
@@ -184,7 +184,7 @@ else{ // Si ce n'est pas un changement de couleur simple
   }
   if(selected_char=='A'){
     if(carte_jeu.nbartefacts<NBMAXARTEFACT){// Si il reste de la place dans le tableau
-     if(carte_jeu.cases[posX-1][posY-1].elem =='$' ||carte_jeu.cases[posX-1][posY-1].elem =='X' || carte_jeu.cases[posX-1][posY-1].elem =='s'){ // Et qu'on ne clique pas déjà sur un M ou un A
+     if((carte_jeu.cases[posX-1][posY-1].elem =='$' ||carte_jeu.cases[posX-1][posY-1].elem =='X' || carte_jeu.cases[posX-1][posY-1].elem =='s') && carte_jeu.cases[posX-1][posY-1].code_couleur!=BLUE){ // Et qu'on ne clique pas déjà sur un M ou un A
           int indiceplacementartefact=premiere_place_libre_artefact(carte_jeu.artefacts); // La place disponible
           mvwprintw(fenetre_carte,posY,posX,"A");
              carte_jeu.cases[posX-1][posY-1].elem='A'; //Element = Artefact, la case pointera sur la première place libre dans le tableau d'artefact.
@@ -202,7 +202,7 @@ else{ // Si ce n'est pas un changement de couleur simple
   if(selected_char=='M'){
     /* Si la place est disponible */
     if(carte_jeu.nbmob<NBMAXMOB){
-     if(carte_jeu.cases[posX-1][posY-1].elem =='$' ||carte_jeu.cases[posX-1][posY-1].elem =='X' || carte_jeu.cases[posX-1][posY-1].elem =='s'){
+     if((carte_jeu.cases[posX-1][posY-1].elem =='$' ||carte_jeu.cases[posX-1][posY-1].elem =='X' || carte_jeu.cases[posX-1][posY-1].elem =='s') && carte_jeu.cases[posX-1][posY-1].code_couleur!=BLUE){
        int indiceplacementmonstre=premiere_place_libre_monstre(carte_jeu.monstre);
           mvwprintw(fenetre_carte,posY,posX,"M");
              carte_jeu.cases[posX-1][posY-1].elem='M';
@@ -220,7 +220,7 @@ else{ // Si ce n'est pas un changement de couleur simple
   }
 
   if(selected_char=='X'){
-    if(carte_jeu.cases[posX-1][posY-1].elem =='$' ||carte_jeu.cases[posX-1][posY-1].elem =='X' || carte_jeu.cases[posX-1][posY-1].elem =='s'){
+    if((carte_jeu.cases[posX-1][posY-1].elem =='$' ||carte_jeu.cases[posX-1][posY-1].elem =='X' || carte_jeu.cases[posX-1][posY-1].elem =='s') && carte_jeu.cases[posX-1][posY-1].code_couleur!=BLUE ){
           mvwprintw(fenetre_carte,posY,posX,"X");
           carte_jeu.cases[posX-1][posY-1].elem='X';
     }
