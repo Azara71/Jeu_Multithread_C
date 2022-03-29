@@ -109,8 +109,7 @@ if(chercher_map_from_list(liste_carte_active,info_client->hero.carteX,info_clien
                 off_t emplacement_carte_to_load=trouver_emplacement_par_tabnodes(l_carte,info_client->hero.carteX,info_client->hero.carteY);   
                 carte_a_envoyer=charger_carte_monde_sav("monde.sav",world_descriptor,emplacement_carte_to_load);
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
-                carte_a_envoyer.nb_joueur++;
-                
+                carte_a_envoyer.nb_joueur=1;
                 liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
             }
   }
@@ -119,7 +118,7 @@ if(chercher_map_from_list(liste_carte_active,info_client->hero.carteX,info_clien
           carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
           carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
           carte_a_envoyer.nb_joueur++;
-          mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+          mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer,world_descriptor);
 
             
   }
@@ -167,7 +166,17 @@ while(stop_thread==0){
       */
       case THREAD_STOP:
       stop_thread=1;
+      carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
+      if( carte_a_envoyer.nb_joueur-1<=0){
+          carte_a_envoyer.nb_joueur=0;
+      }
+      else{
+          carte_a_envoyer.nb_joueur--;
+      }
+     mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX, info_client->hero.carteY,carte_a_envoyer,world_descriptor);
+  
 
+     
       if(write(info_client->sockclient,&confirmation_eteinte, sizeof(int)) == -1) {
             perror("Erreur lors de l'envoi de la valeur ");
             exit(EXIT_FAILURE);
@@ -206,25 +215,24 @@ while(stop_thread==0){
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
                 info_client->hero.cooY=info_client->hero.cooY-1;
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
-                mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX, info_client->hero.carteY,carte_a_envoyer);
+                mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX, info_client->hero.carteY,carte_a_envoyer,world_descriptor);
             }
       }
       else{ // Changement de map vers le haut
             carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
             carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
-            if(carte_a_envoyer.nb_joueur-1<0){
+            if(carte_a_envoyer.nb_joueur<=1){
+                printf("Le dernier joueur sur la carte a quitté");
                 carte_a_envoyer.nb_joueur=0;
             }
             else{
                 carte_a_envoyer.nb_joueur--;
             }
             
-            printf("ANCIENNE CARTE: NB JOUEUR %d\n", carte_a_envoyer.nb_joueur);
-            mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+            mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer,world_descriptor);
             info_client->hero.cooY=19;    
             info_client->hero.carteY=info_client->hero.carteY+1;   
 
-          
             // Si pas dans la liste => Cherche dans la table
             if(chercher_map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer)==0){  
                     if(lseek(world_descriptor,0,SEEK_SET)==-1){
@@ -252,7 +260,7 @@ while(stop_thread==0){
                   carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
                   carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
                   carte_a_envoyer.nb_joueur++;
-                  mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                  mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer,world_descriptor);
             }
                  
       }
@@ -283,22 +291,23 @@ while(stop_thread==0){
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' '; // Mise à jour de la map dans la liste de map
                 info_client->hero.cooX=info_client->hero.cooX-1;
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
-                mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer,world_descriptor);
             }
       }
       else{// Si tu dois générer une map
             carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY); // Pour reprendre la map à jour
             carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';                     // Pour supprimer le H à l'ancienne case
-              if(carte_a_envoyer.nb_joueur-1<0){
+               if(carte_a_envoyer.nb_joueur<=1){
+                printf("Le dernier joueur sur la carte a quitté");
                 carte_a_envoyer.nb_joueur=0;
-              }
-              else{
+                }
+                else{
                 carte_a_envoyer.nb_joueur--;
-              }
+                }
             
-            mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);    // Pour mettre la map à jour
+            mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer,world_descriptor);
 
-            info_client->hero.cooX=39;                                                                          // On repop le perso à l'extrémité
+            info_client->hero.cooX=40;                                                                          // On repop le perso à l'extrémité
             info_client->hero.carteX=info_client->hero.carteX-1;                                                // On décrémente d'une carte.
 
           
@@ -331,11 +340,18 @@ while(stop_thread==0){
                   carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
                   carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
                   carte_a_envoyer.nb_joueur++;                            
-
-                  mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                  mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer,world_descriptor);
             }
+
+       if(info_client->hero.carteX+1==0 && info_client->hero.carteY==0){
+            carte_t hold_card=map_from_list(liste_carte_active,0,0);
+            hold_card.cases[1][info_client->hero.cooY].elem=' ';
+            hold_card.nb_joueur--;
+            mettre_a_jour_map_in_list(liste_carte_active,0,0,carte_a_envoyer,world_descriptor);
+       }
+
+
       }
-      printf("ACTUELLEMENT : %d\n",carte_a_envoyer.nb_joueur++);
       pthread_mutex_unlock(&mutex);
       break;
       
@@ -364,20 +380,21 @@ while(stop_thread==0){
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
                 info_client->hero.cooX=info_client->hero.cooX+1;
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
-                 mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer,world_descriptor);
             }
       }
       else{
-            carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
             carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
-              if(carte_a_envoyer.nb_joueur-1<0){
+               if(carte_a_envoyer.nb_joueur<=1){
+                printf("Le dernier joueur sur la carte a quitté");
                 carte_a_envoyer.nb_joueur=0;
-              }
-              else{
+                }
+                else{
                 carte_a_envoyer.nb_joueur--;
-              }
+                }
             
-            mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+            mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer,world_descriptor);
+
             info_client->hero.cooX=0;    
             info_client->hero.carteX=info_client->hero.carteX+1;   
 
@@ -412,9 +429,10 @@ while(stop_thread==0){
                   carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
                   carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
                   carte_a_envoyer.nb_joueur++;                            
-                  mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                  mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer,world_descriptor);
             }
       }
+     
       pthread_mutex_unlock(&mutex);
       break;
 
@@ -443,21 +461,23 @@ while(stop_thread==0){
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
                 info_client->hero.cooY=info_client->hero.cooY+1;
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
-                mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                  mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer,world_descriptor);
             }
 
       }
       else{
             carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
             carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
-              if(carte_a_envoyer.nb_joueur-1<0){
+              if(carte_a_envoyer.nb_joueur<=1){
+                printf("Le dernier joueur sur la carte a quitté");
                 carte_a_envoyer.nb_joueur=0;
-              }
-              else{
+                }
+                else{
                 carte_a_envoyer.nb_joueur--;
-              }
+                }
             
-            mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer,world_descriptor);
+
             info_client->hero.cooY=0;    
             info_client->hero.carteY=info_client->hero.carteY-1;   
 
@@ -489,7 +509,7 @@ while(stop_thread==0){
                   carte_a_envoyer=map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
                   carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
                   carte_a_envoyer.nb_joueur++;
-                  mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                  mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer,world_descriptor);
             }
       }
       pthread_mutex_unlock(&mutex);
@@ -503,7 +523,8 @@ while(stop_thread==0){
 */
 pthread_mutex_lock(&mutex);
 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
-mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                  mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer,world_descriptor);
+
 pthread_mutex_unlock(&mutex);
 
 

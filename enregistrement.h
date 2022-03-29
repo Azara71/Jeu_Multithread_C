@@ -8,4 +8,5 @@ off_t enregistrer_new_sav_carte(carte_t* carte,int fd);
 carte_t charger_carte_monde_sav(char* name_file,int fd,off_t k);
 carte_t charger_carte(char* name_file);
 carte_t charger_carte_default();
+void enregistrer_carte_emplacement_dans_fichier(carte_t* carte,int fd);
 #endif

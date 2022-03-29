@@ -14,6 +14,7 @@
 #include <unistd.h> 
 #include <string.h>
 
+
 #define BLUE 2
 #define YELLOW 3
 #define GREEN 4
@@ -262,6 +263,30 @@ off_t k;
   return k;
 }
 
+void enregistrer_carte_emplacement_dans_fichier(carte_t* carte,int fd)
+{
+    
+    
+   if(write(fd,carte->cases,800*sizeof(case_t))==-1){
+       perror("Erreur ecriture fichier 1");                         /*  FILE  */
+          exit(EXIT_FAILURE);
+   };
+    if(write(fd,&carte->nbmob,sizeof(int))==-1){
+       perror("Erreur ecriture fichier 1");                         /*  FILE  */
+          exit(EXIT_FAILURE);
+    };
+     if(write(fd,&carte->nbartefacts,sizeof(int))==-1){
+       perror("Erreur ecriture fichier 1");                         /*  FILE  */
+          exit(EXIT_FAILURE);
+    };
+   for(int i=0;i<20;i++){
+       enregistrer_monstre(fd,carte->monstre[i]);
+   }
+    for(int i=0;i<20;i++){
+       enregistrer_artefact(fd,carte->artefacts[i]);
+   }
+
+}
 
 
 

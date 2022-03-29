@@ -1,8 +1,18 @@
+#include <locale.h>     // Pour setlocal
+#include <stdlib.h>     // Pour EXIT_SUCCESS
+#include <ncurses.h>    // Pour les fonctions/constantes ncurses
+#include "fonction_ncurses.h"  // Les fonctions personnalisées
+#include "monstre.h"
+#include "artefact.h"
 #include "carte.h"
+#include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 #include <sys/types.h>
-#include <unistd.h>
+#include <unistd.h> 
+#include <string.h>
 #include "enregistrement.h"
 void afficher_carte(WINDOW* fen_affichage,carte_t carte){
 // AFFICHAGE D'UNE CARTE AU COMPLET
@@ -73,6 +83,7 @@ liste_carte_t *inserer_liste(liste_carte_t *liste, int x,int y,carte_t carteains
 */
 liste_carte_t *remove_map_from_list(liste_carte_t *liste,int x,int y)
 {
+    printf("REMOVE DE  : (%d,%d)\n",x,y);
     if (liste != NULL)
     {
         carte_chainee_t *current = liste->tete;
@@ -175,11 +186,41 @@ void afficher_liste_carte(liste_carte_t *liste)
     printf("NULL\n");
 }
 
-liste_carte_t* mettre_a_jour_map_in_list(liste_carte_t *liste, int x, int y,carte_t carte){
+liste_carte_t* mettre_a_jour_map_in_list(liste_carte_t *liste, int x, int y,carte_t carte,int world_descriptor){
+
+
+
 
 if (liste != NULL)
     {
         carte_chainee_t *current = liste->tete;
+         tabnodes_t* tabnodes;
+         off_t emplacement;
+        if(carte.nb_joueur<=0){
+            if(lseek(world_descriptor,0,SEEK_SET)==-1){
+                     perror("Déplacement fichier ");                         /*  FILE  */
+                     exit(EXIT_FAILURE);
+             }
+            tabnodes=lire_tab_nodes_dans_fichier(world_descriptor);
+            emplacement=trouver_emplacement_par_tabnodes(tabnodes,x,y);
+            
+            if(lseek(world_descriptor,emplacement,SEEK_SET)==-1){
+                perror("Déplacement fichier  dans enregistrer_carte_emplacement_dans_fichier dans");                         
+                exit(EXIT_FAILURE);
+            }    
+
+            enregistrer_carte_emplacement_dans_fichier(&carte,world_descriptor);
+            if(x==0 && y==0){
+                
+            }
+            else{
+              liste=remove_map_from_list(liste,x,y);
+            }
+            afficher_liste_carte(liste);
+            printf("ENREGISTREMENT DANS %ld",emplacement);
+
+        }
+        else{
         while (current != NULL)
         {
             if (current->x==x && current->y==y)
@@ -193,6 +234,7 @@ if (liste != NULL)
             }
         }
 
+    }
     }
 return liste;
 
