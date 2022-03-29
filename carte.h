@@ -6,6 +6,8 @@ typedef struct carte_type{
     artefact_t artefacts[20];
     int nbmob;
     int nbartefacts;
+    int nb_joueur;
+
 
 }carte_t;
 
