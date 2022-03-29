@@ -183,7 +183,7 @@ WINDOW* creer_fenetre_stat(){
   WINDOW* fenetre_stat;
   fenetre_stat=newwin(22,40,10,43);
   box(fenetre_stat,0,0);
-  mvwprintw(fenetre_stat, 0, 1, "Information");
+  mvwprintw(fenetre_stat, 0, 1, "Statistiques et equipements");
   scrollok(fenetre_stat,TRUE);
   return fenetre_stat;
 }

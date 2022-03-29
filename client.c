@@ -20,11 +20,13 @@ PROGRAMME DU CLIENT,IL PREND LE PORT DU SERVEUR EN PARAMETRE ET UNE IP
 #include <unistd.h>
 #include <signal.h>
 #include <stdio.h>
+#include "hero.h"
 
 
 
 #define CARTE 1
 #define THREAD_STOP 2
+#define DEMANDE_HERO 3
 #define BOTTOM 258 
 #define TOP 259
 #define LEFT 260
@@ -111,9 +113,10 @@ Routine du thread d'affichage
 void* thread_affichage(void *arg){
 data_to_thread_affichage_t* data_to_thread_affichage=(data_to_thread_affichage_t*) arg;
 int demande_carte=CARTE;
+int demande_hero=DEMANDE_HERO;
 int demande_deco=THREAD_STOP;
 int totallus,lus=0;
-
+hero_t my_hero;
 
 while(stop_affichage==0){
 /*
@@ -134,8 +137,23 @@ while(totallus != sizeof(carte_t)){
     totallus+=lus;
 }
 totallus=0;
-afficher_carte(data_to_thread_affichage->fenetre_carte,carte_jeu);
 
+if(write(data_to_thread_affichage->fd,&demande_hero,sizeof(int))== -1) {
+        perror("Erreur lors de l'envoi de la valeur ");
+        exit(EXIT_FAILURE);
+}
+
+while(totallus != sizeof(hero_t)){
+    if((lus=read(data_to_thread_affichage->fd,&my_hero,sizeof(hero_t)-totallus))==-1){
+        perror("Erreur lecture de carte");
+        exit(EXIT_FAILURE);
+    }
+    totallus+=lus;
+}
+totallus=0;
+
+afficher_carte(data_to_thread_affichage->fenetre_carte,carte_jeu);
+afficher_stat_hero(data_to_thread_affichage->fenetre_stat,my_hero);
 }
    
 printf("Deconnexion...");

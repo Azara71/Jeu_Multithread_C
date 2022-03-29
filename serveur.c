@@ -27,6 +27,7 @@ PROGRAMME DU SERVEUR, IL PREND LE PORT TCP EN ENTREE, LE NOM DU REPETOIRE DE CAR
 #define TOP 259
 #define LEFT 260
 #define RIGHT 261
+#define DEMANDE_HERO 3
 
 /*
 * Structure gérant les informations à passer au thread gérant le client à sa création
@@ -60,12 +61,12 @@ while((info_directory=readdir(directory))!=NULL){
 return nb_carte_dans_repertoire;
 }
 
-void ramasser_piece_grand_tout(hero_t hero){
+hero_t ramasser_piece_grand_tout(hero_t hero){
 
     if(hero.nb_piece_grand_tout<3){
         hero.nb_piece_grand_tout++;
     }
-
+return hero;
 }
 
 /*
@@ -147,6 +148,17 @@ while(stop_thread==0){
       }
       pthread_mutex_unlock(&mutex);
       break;
+
+     case DEMANDE_HERO : 
+      pthread_mutex_lock(&mutex);
+      
+      if(write(info_client->sockclient, &info_client->hero, sizeof(hero_t)) == -1) {
+            perror("Erreur lors de l'envoi de la valeur ");
+            exit(EXIT_FAILURE);
+      }
+      pthread_mutex_unlock(&mutex);
+      break;
+
       /*
       * Demande de l'arrêt du client.
       */
@@ -176,7 +188,8 @@ while(stop_thread==0){
                             info_client->hero.health=info_client->hero.health_max;
                         }
                         else{
-                            ramasser_piece_grand_tout(info_client->hero);
+                            printf("RAMASSAGE PIECE GRAND TOUT\n");
+                            info_client->hero=ramasser_piece_grand_tout(info_client->hero);
                         }    
                 }
                 if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem=='A'){ // Si il y a un artefact on le ramasse au premier emplacement libre
@@ -245,7 +258,7 @@ while(stop_thread==0){
                             info_client->hero.health=info_client->hero.health_max;
                         }
                         else{
-                            ramasser_piece_grand_tout(info_client->hero);
+                             info_client->hero=ramasser_piece_grand_tout(info_client->hero);
                         }    
                 }
                 if(carte_a_envoyer.cases[info_client->hero.cooX-1][info_client->hero.cooY].elem=='A'){// Si il y y a un artefact alors tu le ramasse dans la première pièce de ton inventaire libre.
@@ -313,7 +326,7 @@ while(stop_thread==0){
                             info_client->hero.health=info_client->hero.health_max;
                         }
                         else{
-                            ramasser_piece_grand_tout(info_client->hero);
+                             info_client->hero=ramasser_piece_grand_tout(info_client->hero);
                         }    
                 }
                 if(carte_a_envoyer.cases[info_client->hero.cooX+1][info_client->hero.cooY].elem=='A'){
@@ -382,7 +395,7 @@ while(stop_thread==0){
                             info_client->hero.health=info_client->hero.health_max;
                         }
                         else{
-                            ramasser_piece_grand_tout(info_client->hero);
+                             info_client->hero=ramasser_piece_grand_tout(info_client->hero);
                         }    
                 }
                 if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY+1].elem=='A'){
