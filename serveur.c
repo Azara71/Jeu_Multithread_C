@@ -28,6 +28,7 @@ PROGRAMME DU SERVEUR, IL PREND LE PORT TCP EN ENTREE, LE NOM DU REPETOIRE DE CAR
 #define LEFT 260
 #define RIGHT 261
 #define DEMANDE_HERO 3
+#define USE 101
 
 /*
 * Structure gérant les informations à passer au thread gérant le client à sa création
@@ -41,6 +42,13 @@ typedef struct info_client{
     hero_t hero;
 }info_client_t;
 
+typedef struct data_to_monstre{
+
+    monstre_t monstre;
+    carte_t* carte;
+    int indice_monstre;
+    liste_carte_t* liste_carte;
+}data_to_monstre_t;
 
 /*
 * Renvoi le nombre de carte dans une map
@@ -77,6 +85,8 @@ int world_descriptor;
 int nb_carte_dans_repertoire;
 pthread_t id_thread_monstre[1024];
 char* cartes[300];
+pthread_mutex_t mutex_cases[40][20];
+
 
 
 void *thread_spawn_aleatoire(void *arg){
@@ -96,7 +106,121 @@ while(stop==0){
 return NULL;
 }
 
+void *thread_monstre(void *arg){
+  int stop=0;
+ 
+  data_to_monstre_t* datamonstre=(data_to_monstre_t*) arg;
+  // On cherche l'indice grâce à l'ID du monstre (Parcours de 800 cases)
+  int posX=0;
+  int posY=0;
+    for(int i=0;i<40;i++){
+        for(int j=0;j<20;j++){
+                if(datamonstre->carte->cases[i][j].indelem==datamonstre->indice_monstre){
+                    posX=i;
+                    posY=j;
+                }
+        }
+    }
+    printf("%d,%d",posX,posY);
+    while(stop==0){
+         // printf("MONSTRE :%d NOM : %s",datamonstre->indice_monstre,datamonstre->monstre.name);
 
+        if(datamonstre->monstre.speed>0){
+            int pos=generer_nombre_aleatoire(4);
+            switch(pos){ // Il y a un segmentation fault à l'intérieur de ce code, que je ne comprend pas, je l'ai donc laissé en //, ici les monstres sont donc statiques.
+                /*
+                  case 0:// MOVE GAUCHE
+                   if(posX-1>=0){
+                    datamonstre->carte->cases[posX][posY].elem='s';
+                    datamonstre->carte->cases[posX][posY].indelem=-1;
+                    posX=posX-1;
+                    datamonstre->carte->cases[posX][posY].elem='M';
+                    datamonstre->carte->cases[posX][posY].indelem=datamonstre->indice_monstre;
+                    }
+
+                break;
+
+                case 1:
+                 if(posX+1<=40){
+                    datamonstre->carte->cases[posX][posY].elem='s';
+                    datamonstre->carte->cases[posX][posY].indelem=-1;
+                    posX=posX+1;
+                    datamonstre->carte->cases[posX][posY].elem='M';
+                    datamonstre->carte->cases[posX][posY].indelem=datamonstre->indice_monstre;
+                 }
+
+                break;
+                case 2:                    
+                    if(posY+1<=40){
+                    datamonstre->carte->cases[posX][posY].elem='s';
+                    datamonstre->carte->cases[posX][posY].indelem=-1;
+                    posY=posY+1;
+                    datamonstre->carte->cases[posX][posY].elem='M';
+                    datamonstre->carte->cases[posX][posY].indelem=datamonstre->indice_monstre;
+                    }
+                break;
+                case 3: 
+                   if(posY-1>=0){   
+                    datamonstre->carte->cases[posX][posY].elem='s';
+                    datamonstre->carte->cases[posX][posY].indelem=-1;
+                     posY=posY-1;
+                    datamonstre->carte->cases[posX][posY].elem='M';
+                    datamonstre->carte->cases[posX][posY].indelem=datamonstre->indice_monstre;
+                    
+                   }
+                break;
+                */
+            }
+        
+        
+        
+        sleep(1);
+
+        }
+
+        
+    }
+return NULL;
+}
+
+void lancer_thread_monstre(liste_carte_t *liste,int x,int y){
+    data_to_monstre_t data_to_monstre[20];
+    if (liste != NULL)
+    {
+        carte_chainee_t *current = liste->tete;
+        while (current != NULL)
+        {
+            if (current->x==x && current->y==y)
+            {
+                  for(int i=0;i<current->carte.nbmob;i++){
+                        data_to_monstre[i].indice_monstre=i;
+                        data_to_monstre[i].monstre=current->carte.monstre[i];
+                        data_to_monstre[i].carte=&current->carte;
+                        data_to_monstre[i].liste_carte=liste;
+                        pthread_create(&current->id_thread_monstre[i],NULL,thread_monstre,&data_to_monstre[i]);                   
+                }
+            }
+            current = current->suivant;
+
+        }
+    }
+}
+void eteindre_thread_monstre(liste_carte_t *liste,int x,int y){
+    if (liste != NULL)
+    {
+        carte_chainee_t *current = liste->tete;
+        while (current != NULL)
+        {
+            if (current->x==x && current->y==y)
+            {
+                for(int i=0;i<current->carte.nbmob;i++){
+                        pthread_cancel(current->id_thread_monstre[i]);
+                }
+            }
+            current = current->suivant;
+        }
+    }
+}
 
 
 
@@ -227,6 +351,17 @@ while(stop_thread==0){
                             info_client->hero=ramasser_piece_grand_tout(info_client->hero);
                         }    
                 }
+                if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem=='M'){
+                    int resultat;
+                    resultat=fight(info_client->hero,carte_a_envoyer.monstre[carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].indelem]);
+                    if(resultat==1)//Le monstre a gagné
+                {}
+                    else if(resultat==2){
+                        pthread_cancel(id_thread_monstre[carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].indelem]);
+                    }
+
+                }
+
                 if(carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].elem=='A'){ // Si il y a un artefact on le ramasse au premier emplacement libre
                     int  id_cartefact_a_ramasser=carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY-1].indelem;
                     int premiere_place_libre=premiere_place_libre_inventaire_artefact(info_client->hero);
@@ -335,11 +470,9 @@ while(stop_thread==0){
                 }
             
             mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer,world_descriptor);
-
             info_client->hero.cooX=40;                                                                          // On repop le perso à l'extrémité
             info_client->hero.carteX=info_client->hero.carteX-1;                                                // On décrémente d'une carte.
 
-          
             if(chercher_map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer)==0){  // Si pas dans la liste des cartes actives
                     if(lseek(world_descriptor,0,SEEK_SET)==-1){
                             perror("Déplacement fichier ");                         
@@ -558,6 +691,19 @@ while(stop_thread==0){
       pthread_mutex_unlock(&mutex);
       break;
 
+      case USE:
+      printf("DEMANDE D'UTILISATION\n");
+      if(info_client->hero.nb_piece_grand_tout==1){
+          // RALENTISSEMENT     // Baisse la vitesse de déplacement /2
+      } 
+      if(info_client->hero.nb_piece_grand_tout==2){
+          // GEL TOTAL DEPLACEMENT // Reduction de la vitesse de déplacement à 0
+      } 
+      if(info_client->hero.nb_piece_grand_tout==3){
+          //GEL + MIHP          // Mi hp + vitesse à 0
+      }
+      break;
+
   }
 
 }
@@ -636,7 +782,12 @@ node.emplacement_carte=0;
 for(int i=0;i<50;i++){
     inserer_tab_nodes(l_carte,node);
 }
-
+pthread_mutex_t mutex_cases[40][20];
+for(int i=0;i<40;i++){
+    for(int j=0;j<20;j++){
+       pthread_mutex_init(&mutex_cases[i][j], NULL);
+    }
+}
         // On tente d'ouvrir le fichier pour tester s'il existe ou non
         if((world_descriptor=open("monde.sav",O_CREAT|O_EXCL|O_RDWR,S_IRUSR|S_IWUSR))==-1){
                if(errno==EEXIST){   

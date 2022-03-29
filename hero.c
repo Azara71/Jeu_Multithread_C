@@ -166,3 +166,28 @@ wrefresh(win);
 
 
 }
+
+int fight(hero_t hero,monstre_t monstre){/*
+    int mort=0;
+
+    while(mort==0){
+        if(monstre.attackspeed>hero.attackspeed){
+            hero.health=hero.health-monstre.strength;
+            if(hero.health<=0){ 
+                mort=0;
+                return 1;
+            }
+        }
+        else{
+             monstre.health=monstre.health-monstre.strength;
+               if(hero.health<=0){
+                mort=0;
+                return 2;
+
+            }
+        }
+    }*/
+    return 0;
+    
+
+}

@@ -31,6 +31,7 @@ PROGRAMME DU CLIENT,IL PREND LE PORT DU SERVEUR EN PARAMETRE ET UNE IP
 #define TOP 259
 #define LEFT 260
 #define RIGHT 261
+#define USE 101
 
 carte_t carte_jeu;
 pthread_mutex_t mutex= PTHREAD_MUTEX_INITIALIZER;
@@ -61,6 +62,7 @@ int ch;
 int left=LEFT;
 int right=RIGHT;
 int top=TOP;
+int use=USE;
 int bottom=BOTTOM;
 
 data_to_thread_affichage_t* data_to_thread_affichage=(data_to_thread_affichage_t*) arg;
@@ -89,6 +91,12 @@ switch(ch){
      break;
      case TOP:
      if(write(data_to_thread_affichage->fd,&top,sizeof(int))== -1) {
+        perror("Erreur lors de l'envoi de la valeur ");
+        exit(EXIT_FAILURE);
+     }
+     break;
+     case USE:
+      if(write(data_to_thread_affichage->fd,&use,sizeof(int))== -1) {
         perror("Erreur lors de l'envoi de la valeur ");
         exit(EXIT_FAILURE);
      }

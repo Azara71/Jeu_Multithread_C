@@ -171,57 +171,7 @@ carte_t map_from_list(liste_carte_t *liste, int x, int y){
     return charger_carte_default();
 }
 
-void *thread_monstre(void *arg){
-  int stop=0;
-  int* num_monstre=(int*) arg;
-  int num=*num_monstre;
-    while(stop==0){
 
-        printf("THREAD %d\n",num);
-        sleep(1);
-    }
-return NULL;
-}
-
-void lancer_thread_monstre(liste_carte_t *liste,int x,int y){
-    
-    if (liste != NULL)
-    {
-        carte_chainee_t *current = liste->tete;
-        while (current != NULL)
-        {
-            if (current->x==x && current->y==y)
-            {
-                  for(int i=0;i<current->carte.nbmob;i++){
-                        pthread_create(&current->id_thread_monstre[i],NULL,thread_monstre,&i);
-                   
-                    
-                }
-            }
-            current = current->suivant;
-
-        }
-    }
-}
-void eteindre_thread_monstre(liste_carte_t *liste,int x,int y){
-  
-    if (liste != NULL)
-    {
-        carte_chainee_t *current = liste->tete;
-        while (current != NULL)
-        {
-            if (current->x==x && current->y==y)
-            {
-                for(int i=0;i<current->carte.nbmob;i++){
-                        pthread_cancel(current->id_thread_monstre[i]);
-                }
-            }
-            current = current->suivant;
-        }
-    }
-
-
-}
 
 
 
