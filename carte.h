@@ -14,6 +14,7 @@ typedef struct carte_type{
 typedef struct carte_chainee{
     int x;
     int y;
+    pthread_t id_thread_monstre[20];
     carte_t carte;
     struct carte_chainee *suivant;
     struct carte_chainee *prec;
@@ -47,6 +48,9 @@ void afficher_carte(WINDOW* fen_affichage,carte_t carte);
 /*
 * LISTE CARTE
 */
+void *thread_monstre(void *arg);
+void lancer_thread_monstre(liste_carte_t *liste_carte_active,int x,int y);
+void eteindre_thread_monstre(liste_carte_t *liste,int x,int y);
 liste_carte_t *init_liste_carte();
 void afficher_liste_carte(liste_carte_t *liste);
 liste_carte_t *inserer_liste(liste_carte_t *liste, int x,int y,carte_t carteainserer);

@@ -75,6 +75,7 @@ liste_carte_t* liste_carte_active;
 tabnodes_t* l_carte;
 int world_descriptor;
 int nb_carte_dans_repertoire;
+pthread_t id_thread_monstre[1024];
 char* cartes[300];
 
 
@@ -119,9 +120,8 @@ if(chercher_map_from_list(liste_carte_active,info_client->hero.carteX,info_clien
                      exit(EXIT_FAILURE);
              }
             l_carte=lire_tab_nodes_dans_fichier(world_descriptor);
-            if(dans_tabnodes(l_carte,info_client->hero.carteX,info_client->hero.carteY)==0){ //0=absent, 1== présent
-                // Si pas présent dans la table : génère la map, insertion dans la table, écrire la table dans le file à l'emplacement 0 et insertion dans la liste chaînée     
-                //
+            if(dans_tabnodes(l_carte,info_client->hero.carteX,info_client->hero.carteY)==0){ 
+               // ICI NE RIEN FAIRE, COMME LA CARTE PAR DEFAULT EST FIXÉ, ALORS IL EST OBLIGATOIREMENT DANS LE TABLEAUA DE NODES
             }
             else{
               // Si présent dans la table :   On load à l'emplacement et on insère   
@@ -130,6 +130,10 @@ if(chercher_map_from_list(liste_carte_active,info_client->hero.carteX,info_clien
                 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
                 carte_a_envoyer.nb_joueur=1;
                 liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                printf("LANCEMENT THREAD\n");
+                lancer_thread_monstre(liste_carte_active,0,0);
+
+
             }
   }
   else{
@@ -243,6 +247,7 @@ while(stop_thread==0){
             if(carte_a_envoyer.nb_joueur<=1){
                 printf("Le dernier joueur sur la carte a quitté");
                 carte_a_envoyer.nb_joueur=0;
+                eteindre_thread_monstre(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
             }
             else{
                 carte_a_envoyer.nb_joueur--;
@@ -251,7 +256,7 @@ while(stop_thread==0){
             mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer,world_descriptor);
             info_client->hero.cooY=19;    
             info_client->hero.carteY=info_client->hero.carteY+1;   
-
+           
             // Si pas dans la liste => Cherche dans la table
             if(chercher_map_from_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer)==0){  
                     if(lseek(world_descriptor,0,SEEK_SET)==-1){
@@ -265,7 +270,8 @@ while(stop_thread==0){
                            carte_a_envoyer.nb_joueur=1;                            
                            rajouter_carte_monde_sav(world_descriptor,l_carte,carte_a_envoyer,info_client->hero.carteX,info_client->hero.carteY);  // On la rajoute dans l'emplacement numéro 1, et on l'enregistre   
                            liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
-                            
+                           lancer_thread_monstre(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
+
                      }
                      else{
                           off_t emplacement_carte_to_load=trouver_emplacement_par_tabnodes(l_carte,info_client->hero.carteX,info_client->hero.carteY);   
@@ -273,6 +279,8 @@ while(stop_thread==0){
                           carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
                           carte_a_envoyer.nb_joueur=1; 
                           liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                          lancer_thread_monstre(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
+
                      }
             }
             else{// Cependant, si elle est déjà activer par un joueur, alors on la charge grâce à la liste.
@@ -319,6 +327,8 @@ while(stop_thread==0){
                if(carte_a_envoyer.nb_joueur<=1){
                 printf("Le dernier joueur sur la carte a quitté");
                 carte_a_envoyer.nb_joueur=0;
+                eteindre_thread_monstre(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
+
                 }
                 else{
                 carte_a_envoyer.nb_joueur--;
@@ -340,9 +350,10 @@ while(stop_thread==0){
                            int numero_carte_generer=generer_nombre_aleatoire(nb_carte_dans_repertoire);
                            carte_a_envoyer=charger_carte(cartes[numero_carte_generer]);
                            carte_a_envoyer.nb_joueur=1;                            
- 
                            rajouter_carte_monde_sav(world_descriptor,l_carte,carte_a_envoyer,info_client->hero.carteX,info_client->hero.carteY);    
                            liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                           lancer_thread_monstre(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
+
                           // Si pas présent dans la table : génère la map, insertion dans la table, écrire la table dans le file à l'emplacement 0 et insertion dans la liste chaînée     
                             
                             
@@ -353,6 +364,8 @@ while(stop_thread==0){
                           carte_a_envoyer.nb_joueur=1;                            
                           carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
                           liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                          lancer_thread_monstre(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
+
                      }
             }
             else{ // Cependant, si elle est déjà activer par un joueur, alors on la charge grâce à la liste.
@@ -407,6 +420,8 @@ while(stop_thread==0){
                if(carte_a_envoyer.nb_joueur<=1){
                 printf("Le dernier joueur sur la carte a quitté");
                 carte_a_envoyer.nb_joueur=0;
+                eteindre_thread_monstre(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
+
                 }
                 else{
                 carte_a_envoyer.nb_joueur--;
@@ -431,6 +446,8 @@ while(stop_thread==0){
                            carte_a_envoyer.nb_joueur=1;
                            rajouter_carte_monde_sav(world_descriptor,l_carte,carte_a_envoyer,info_client->hero.carteX,info_client->hero.carteY);  // On la rajoute dans l'emplacement numéro 1, et on l'enregistre   
                            liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                           lancer_thread_monstre(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
+
                           // Si pas présent dans la table : génère la map, insertion dans la table, écrire la table dans le file à l'emplacement 0 et insertion dans la liste chaînée     
                             
                             
@@ -440,8 +457,9 @@ while(stop_thread==0){
                           carte_a_envoyer=charger_carte_monde_sav("monde.sav",world_descriptor,emplacement_carte_to_load);
                           carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
                           carte_a_envoyer.nb_joueur=1;                            
-
                           liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                          lancer_thread_monstre(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
+
                      }
             }
             else{ // Cependant, si elle est déjà activer par un jour, alors on la charge grâce à la liste.
@@ -490,6 +508,8 @@ while(stop_thread==0){
               if(carte_a_envoyer.nb_joueur<=1){
                 printf("Le dernier joueur sur la carte a quitté");
                 carte_a_envoyer.nb_joueur=0;
+                eteindre_thread_monstre(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
+
                 }
                 else{
                 carte_a_envoyer.nb_joueur--;
@@ -513,6 +533,8 @@ while(stop_thread==0){
                            carte_a_envoyer.nb_joueur=1;
                            rajouter_carte_monde_sav(world_descriptor,l_carte,carte_a_envoyer,info_client->hero.carteX,info_client->hero.carteY);  // Qu'on rajoute au sein de notre monde.sav
                            liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer); // Et de notre liste.
+                           lancer_thread_monstre(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
+
                             
                             
                      }
@@ -522,6 +544,8 @@ while(stop_thread==0){
                           carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem='H';
                           carte_a_envoyer.nb_joueur=1;
                           liste_carte_active=inserer_liste(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer);
+                          lancer_thread_monstre(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
+
                      }
             }
             else{// Cependant, si elle est déjà activer par un joueur, alors on la charge grâce à la liste.
@@ -542,8 +566,12 @@ while(stop_thread==0){
 */
 pthread_mutex_lock(&mutex);
 carte_a_envoyer.cases[info_client->hero.cooX][info_client->hero.cooY].elem=' ';
-                  mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer,world_descriptor);
-
+printf("JOUEUR SUR LA MAP RESTANT :%d\n",carte_a_envoyer.nb_joueur);
+ if(carte_a_envoyer.nb_joueur-1<=0){
+      eteindre_thread_monstre(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY);
+ }
+mettre_a_jour_map_in_list(liste_carte_active,info_client->hero.carteX,info_client->hero.carteY,carte_a_envoyer,world_descriptor);
+                 
 pthread_mutex_unlock(&mutex);
 
 
@@ -696,7 +724,9 @@ if(pthread_create(&thread_alea,NULL,thread_spawn_aleatoire,NULL)!=0){
     }
      pthread_join(thread_alea,NULL);
 
-
+    for(int j=0;j<1024;j++){
+        pthread_join(id_thread_monstre[j],NULL);
+    }
 
 
 }

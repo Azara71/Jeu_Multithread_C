@@ -85,6 +85,7 @@ else {                    // SI AUCUN SOUCIS d'ARGUMENT, ON CHARGE LA CARTE GRAC
 printf("\nCHARGEMENT DE :%s\n",path); // SI elle existe
 carte_jeu=charger_carte(path);
 }
+carte_jeu.nbmob=0;
 
   // Initialisation de ncurses
   setlocale(LC_ALL, "");
