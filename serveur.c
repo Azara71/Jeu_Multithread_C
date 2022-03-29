@@ -41,9 +41,6 @@ typedef struct info_client{
     hero_t hero;
 }info_client_t;
 
-int generer_nombre_aleatoire(int nb_max){
-    return rand()%nb_max;
-}
 
 /*
 * Renvoi le nombre de carte dans une map
@@ -79,6 +76,28 @@ tabnodes_t* l_carte;
 int world_descriptor;
 int nb_carte_dans_repertoire;
 char* cartes[300];
+
+
+void *thread_spawn_aleatoire(void *arg){
+
+while(stop==0){
+    // On tire un nombre aléatoire entre 0-60
+    int nb_tempos_attente=generer_nombre_aleatoire(60);
+    nb_tempos_attente=nb_tempos_attente+60;
+    // On prend la liste des maps active qu'on parcours, on gènère deux coordonnées aléatoires et si elles sont dispo on y place un $.
+    pthread_mutex_lock(&mutex);
+    mettre_tresor_alea(liste_carte_active);
+    pthread_mutex_unlock(&mutex);
+    sleep(nb_tempos_attente);
+}
+
+
+return NULL;
+}
+
+
+
+
 
 
 void *thread_client(void *arg){ 
@@ -545,6 +564,7 @@ info_client_t info_client[1024];
 int nb_client=0;
 char nom_repertoire[1024];
 pthread_t thread[1024];
+pthread_t thread_alea;
 DIR* directory;
 liste_carte_active=init_liste_carte();
 carte_t carte_a_envoyer;
@@ -637,6 +657,12 @@ if(listen(fd, 1) == -1) {
     perror("Erreur lors de la mise en mode passif ");
     exit(EXIT_FAILURE);
 }
+if(pthread_create(&thread_alea,NULL,thread_spawn_aleatoire,NULL)!=0){
+        perror("Erreur de création du thread de trésor");
+        exit(EXIT_FAILURE);
+};
+
+
  while(stop == 0) {
         // Attente d'une connexion
         printf("Serveur : attente de connexion...\n");
@@ -668,6 +694,7 @@ if(listen(fd, 1) == -1) {
     for(int j=0;j<nb_client;j++){
         pthread_join(thread[nb_client],NULL);
     }
+     pthread_join(thread_alea,NULL);
 
 
 

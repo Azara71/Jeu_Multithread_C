@@ -42,7 +42,7 @@ typedef struct tabnodes{
      int suivant;
 } tabnodes_t;
 
-
+int generer_nombre_aleatoire(int nb_max);
 void afficher_carte(WINDOW* fen_affichage,carte_t carte);
 /*
 * LISTE CARTE
@@ -55,6 +55,8 @@ void insertion(liste_carte_t *liste, int x, int y);
 int chercher_map_from_list(liste_carte_t *liste, int x, int y,carte_t carte);
 carte_t map_from_list(liste_carte_t *liste, int x, int y);
 liste_carte_t* mettre_a_jour_map_in_list(liste_carte_t *liste, int x, int y,carte_t carte,int world_descriptor);
+void mettre_tresor_alea(liste_carte_t *liste);
+
 /*
 * TABNODES DE CARTE
 */

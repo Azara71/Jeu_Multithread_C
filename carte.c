@@ -14,6 +14,13 @@
 #include <unistd.h> 
 #include <string.h>
 #include "enregistrement.h"
+#define BLUE 2
+
+int generer_nombre_aleatoire(int nb_max){
+    return rand()%nb_max;
+}
+
+
 void afficher_carte(WINDOW* fen_affichage,carte_t carte){
 // AFFICHAGE D'UNE CARTE AU COMPLET
 for(int i=0;i<40;i++){
@@ -186,6 +193,31 @@ void afficher_liste_carte(liste_carte_t *liste)
     printf("NULL\n");
 }
 
+void mettre_tresor_alea(liste_carte_t *liste)
+{
+    if (liste != NULL)
+    {
+        carte_chainee_t *current = liste->tete;
+        while (current != NULL)
+        {
+           if(current->x==0 && current->y==0){
+           }else{
+             int x, y;
+             x=generer_nombre_aleatoire(40);
+             y=generer_nombre_aleatoire(20);
+             if(current->carte.cases[x][y].elem=='s' && current->carte.cases[x][y].code_couleur != BLUE){
+                current->carte.cases[x][y].elem='$';
+             }
+           }
+           current=current->suivant;
+
+        }
+    }
+}
+
+
+
+
 liste_carte_t* mettre_a_jour_map_in_list(liste_carte_t *liste, int x, int y,carte_t carte,int world_descriptor){
 
 
@@ -211,7 +243,7 @@ if (liste != NULL)
 
             enregistrer_carte_emplacement_dans_fichier(&carte,world_descriptor);
             if(x==0 && y==0){
-                
+
             }
             else{
               liste=remove_map_from_list(liste,x,y);
